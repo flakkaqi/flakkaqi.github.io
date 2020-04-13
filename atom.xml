@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的个人微博客</title>
-    <updated>2020-04-13T06:49:29.502Z</updated>
+    <updated>2020-04-13T09:58:45.896Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
@@ -10,6 +10,52 @@
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 祁先生的个人微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[这是我老婆]]></title>
+        <id>https://flakkaqi.github.io/post/zhe-shi-wo-lao-po/</id>
+        <link href="https://flakkaqi.github.io/post/zhe-shi-wo-lao-po/">
+        </link>
+        <updated>2020-04-13T09:38:40.000Z</updated>
+        <content type="html"><![CDATA[<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1586771901375.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[再别康桥 ]]></title>
+        <id>https://flakkaqi.github.io/post/zai-bie-kang-qiao/</id>
+        <link href="https://flakkaqi.github.io/post/zai-bie-kang-qiao/">
+        </link>
+        <updated>2020-04-13T09:28:00.000Z</updated>
+        <content type="html"><![CDATA[<p>🤓🤓🤓###徐志摩</p>
+<p>轻轻的我走了，<br>
+正如我轻轻的来；<br>
+我轻轻的招手，<br>
+作别西天的云彩。</p>
+<p>那河畔的金柳，<br>
+是夕阳中的新娘；<br>
+波光里的艳影，<br>
+在我的心头荡漾。</p>
+<p>软泥上的青荇，<br>
+油油的在水底招摇；<br>
+在康河的柔波里，<br>
+我甘心做一条水草！</p>
+<p>那榆荫下的一潭，<br>
+不是清泉，是天上虹；<br>
+揉碎在浮藻间，<br>
+沉淀着彩虹似的梦。</p>
+<p>寻梦？撑一支长篙，<br>
+向青草更青处漫溯；<br>
+满载一船星辉，<br>
+在星辉斑斓里放歌。</p>
+<p>但我不能放歌，<br>
+悄悄是别离的笙箫；<br>
+夏虫也为我沉默，<br>
+沉默是今晚的康桥！</p>
+<p>悄悄的我走了，<br>
+正如我悄悄的来；<br>
+我挥一挥衣袖，<br>
+不带走一片云彩。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[第一篇文章]]></title>
         <id>https://flakkaqi.github.io/post/di-yi-pian-wen-zhang/</id>
