@@ -62,12 +62,99 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">这是我老婆</h1>
-                    <p class="entry-census">发布于 2020-04-13</p>
+                    <h1 class="entry-title">Java 实现文件和base64字符串互转</h1>
+                    <p class="entry-census">发布于 2020-04-26</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1586771901375.jpg" alt="" loading="lazy"></figure>
+                    <p>🤖有时候吧，前端给后台传的文件可能是经过BASE64转码后的字符串，到了后端我们需要对其进行解码。以下代码就是一个亲测有用的实现过程。那偶不谢.</p>
+<!-- more -->
+<p>😲具体代码如下：</p>
+<pre><code class="language-java">package main.java.demo;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+/**
+ * 适用大部分格式的文件
+ *
+ * @misterqi
+ */
+public class One {
+    public static void main(String[] args) {
+        One t = new One();
+        String str = t.GetImageStr(&quot;C:/Users/QiShuai/Pictures/background/centerbg.jpg&quot;);
+        System.out.println(str);
+        boolean flag = t.GenerateImage(str, &quot;C:/Users/QiShuai/Pictures/background/centerbg2.jpg&quot;);
+        System.out.println(flag);
+    }
+
+    /**
+     * 将文件转化为字节数组字符串，并对其进行Base64编码处理
+     *
+     * @param imgFile
+     * @return
+     */
+    public static String GetImageStr(String imgFile) {
+        InputStream in = null;
+        byte[] data = null;
+        // 读取文件字节数组
+        try {
+            in = new FileInputStream(imgFile);
+            data = new byte[in.available()];
+            in.read(data);
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 对字节数组Base64编码
+        BASE64Encoder encoder = new BASE64Encoder();
+        // 返回Base64编码过的字节数组字符串
+        return encoder.encode(data);
+    }
+
+    /**
+     * 根据字节数组字符串进行Base64解码并生成文件
+     *
+     * @param imgStr
+     * @param savedImagePath
+     * @return
+     */
+    public static boolean GenerateImage(String imgStr, String savedImagePath) {
+        // 文件字节数组字符串数据为空
+        if (imgStr == null)
+            return false;
+        BASE64Decoder decoder = new BASE64Decoder();
+        try {
+            // Base64解码
+            byte[] b = decoder.decodeBuffer(imgStr);
+            for (int i = 0; i &lt; b.length; ++i) {
+                {// 调整异常数据
+                    if (b[i] &lt; 0)
+                        b[i] += 256;
+                }
+            }
+            // 生成文件
+            OutputStream out = new FileOutputStream(savedImagePath);
+            out.write(b);
+            out.flush();
+            out.close();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+}
+</code></pre>
+<p>🤤可以使用随便一个文件进行测试<br>
+<img src="https://flakkaqi.github.io/post-images/1587885084240.jpg" alt="" loading="lazy"></p>
 
                 </div>
             </article>
@@ -77,20 +164,14 @@
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/you-qu-de-kai-yuan-xiang-mu-~/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
-                    <div class="doc-footer-nav-text">
-                        <i class="mdui-icon material-icons">arrow_back</i>
-                        <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">有趣的开源项目~</div>
-                    </div>
-                </a>
+                <div class="mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left"></div>
                 
                 
-                <a href="https://flakkaqi.github.io/post/zai-bie-kang-qiao/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/you-qing-lian-jie/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">再别康桥 </div>
+                        <div class="doc-footer-nav-chapter">友情链接</div>
                     </div>
                 </a>
                 
