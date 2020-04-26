@@ -62,78 +62,54 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">Java 实现文件和base64字符串互转</h1>
+                    <h1 class="entry-title">java创建临时文件并写入数据</h1>
                     <p class="entry-census">发布于 2020-04-26</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p>🤖有时候吧，前端给后台传的文件可能是经过BASE64转码后的字符串，到了后端我们需要对其进行解码。以下代码就是一个亲测有用的实现过程。那偶不谢.</p>
+                    <p>🤣创建文件可不就是为了保存数据吗？</p>
 <!-- more -->
-<p>😲具体代码如下：</p>
-<pre><code class="language-java">package main.java.demo;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
-/**
- * 适用大部分格式的文件
- *
- * @misterqi
- */
-public class One {
-    public static void main(String[] args) {
-        One t = new One();
-        String str = t.GetImageStr(&quot;C:/Users/QiShuai/Pictures/background/centerbg.jpg&quot;);
-        System.out.println(str);
-        boolean flag = t.GenerateImage(str, &quot;C:/Users/QiShuai/Pictures/background/centerbg2.jpg&quot;);
-        System.out.println(flag);
-    }
-
-    /**
-     * 将文件转化为字节数组字符串，并对其进行Base64编码处理
-     *
-     * @param imgFile
-     * @return
-     */
-    public static String GetImageStr(String imgFile) {
-        InputStream in = null;
-        byte[] data = null;
-        // 读取文件字节数组
+<pre><code class="language-java">// 调用：
+{
+String file = &quot;xxxx.&quot;;  //base64编码的字符串
+String fileName = &quot;xxxx.txt&quot;;
+StringBuilder tr = new StringBuilder();
+        String tempPath = tr.append(System.getProperty(&quot;java.io.tmpdir&quot;)).append(File.separator).append(fileName).toString();
         try {
-            in = new FileInputStream(imgFile);
-            data = new byte[in.available()];
-            in.read(data);
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // 对字节数组Base64编码
-        BASE64Encoder encoder = new BASE64Encoder();
-        // 返回Base64编码过的字节数组字符串
-        return encoder.encode(data);
-    }
+            boolean flag = Base64Util.GenerateFile(file, tempPath);
+            if (!flag) {
+                return &quot;文件有误，请检查后重新上传！&quot;;
+            } else {
+                File tempFile = new File(tempPath);
+                //使用File对象
+&lt;!-- more --&gt;
 
-    /**
+            }
+        } catch (Exception e) {
+                e.printStackTrace();
+        } finally {
+            //删除临时文件
+            File tempFile = new File(tempPath);
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
+        }
+}
+/**
      * 根据字节数组字符串进行Base64解码并生成文件
      *
-     * @param imgStr
-     * @param savedImagePath
-     * @return
+     * @param fileStr BASE64编码后的字符串
+     * @param savedFilePath 保存文件的路径和文件名
+     * @return 转换状态
      */
-    public static boolean GenerateImage(String imgStr, String savedImagePath) {
+    public static boolean GenerateFile(String fileStr, String savedFilePath) {
         // 文件字节数组字符串数据为空
-        if (imgStr == null)
+        if (StringUtils.isBlank(fileStr))
             return false;
         BASE64Decoder decoder = new BASE64Decoder();
         try {
             // Base64解码
-            byte[] b = decoder.decodeBuffer(imgStr);
+            byte[] b = decoder.decodeBuffer(fileStr);
             for (int i = 0; i &lt; b.length; ++i) {
                 {// 调整异常数据
                     if (b[i] &lt; 0)
@@ -141,20 +117,15 @@ public class One {
                 }
             }
             // 生成文件
-            OutputStream out = new FileOutputStream(savedImagePath);
+            OutputStream out = new FileOutputStream(savedFilePath);
             out.write(b);
             out.flush();
             out.close();
             return true;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-}
+       }
 </code></pre>
-<p>🤤可以使用随便一个文件进行测试<br>
-<img src="https://flakkaqi.github.io/post-images/1587885084240.jpg" alt="" loading="lazy"></p>
 
                 </div>
             </article>
@@ -164,20 +135,20 @@ public class One {
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/java-chuang-jian-lin-shi-wen-jian-bing-xie-ru-shu-ju/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/java-ru-he-jiang-multipartfile-dui-xiang-zhuan-wei-file-dui-xiang/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">java创建临时文件并写入数据</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">java如何将MultipartFile对象转为File对象</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/you-qing-lian-jie/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">友情链接</div>
+                        <div class="doc-footer-nav-chapter">Java 实现文件和base64字符串互转</div>
                     </div>
                 </a>
                 
