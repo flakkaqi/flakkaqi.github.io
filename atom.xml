@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的微博客</title>
-    <updated>2020-05-29T01:38:38.123Z</updated>
+    <updated>2020-06-03T10:07:41.658Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
@@ -10,6 +10,50 @@
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 祁先生的微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[全角、半角对照表]]></title>
+        <id>https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/</id>
+        <link href="https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/">
+        </link>
+        <updated>2020-06-03T08:39:54.000Z</updated>
+        <summary type="html"><![CDATA[<p>🤡用户输入的全角可能在后台处理成半角，很多方法并不适用所有的全角半角转换，所以，最简单粗暴的方法就是遍历.......</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>🤡用户输入的全角可能在后台处理成半角，很多方法并不适用所有的全角半角转换，所以，最简单粗暴的方法就是遍历.......</p>
+<!-- more -->
+<h3 id="全角半角字符对照表">全角半角字符对照表</h3>
+<pre><code>ａ a ｂ b ｃ c ｄ d ｅ e ｆ f ｇ g ｈ h ｉ i ｊ j ｋ k ｌ l ｍ m ｎ n ｏ o ｐ p ｑ q ｒ r ｓ s ｔ t ｕ u ｖ v ｗ w ｘ x ｙ y ｚ z Ａ A Ｂ B Ｃ C Ｄ D Ｅ E Ｆ F Ｇ G Ｈ H Ｉ I Ｊ J Ｋ K Ｌ L Ｍ M Ｎ N Ｏ O Ｐ P Ｑ Q Ｒ R Ｓ S Ｔ T Ｕ U Ｖ V Ｗ W Ｘ X Ｙ Y Ｚ Z １ 1 ２ 2 ３ 3 ４ 4 ５ 5 ６ 6 ７ 7 ８ 8 ９ 9 ０ 0 ｀ ` ” &quot; ’ ' “ &quot; ‘ ' ＿ _ － - ～ ~ ＝ = ＋ + ＼ \ ｜ | ／ / （ ( ） ) ［ [ ］ ] 【 [ 】 ] ｛ { ｝ } ＜ &lt; ＞ &gt; ． . ， , ； ; ： : ！ ! ＾ ^ ％ % ＃ # ＠ @ ＄ $ ＆ &amp; ？ ? ＊ * 。 .
+</code></pre>
+<pre><code class="language-java">public static void main(String[] args) {
+        String arr = &quot;中国，中文，标点符号！你好？１２３４５＠＃【】+=-（）。&quot;;
+        char[] chars = arr.toCharArray();
+        char[][] charTable = {
+                {'ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ',
+                        'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ', 'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ',
+                        'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ',
+                        'Ｘ', 'Ｙ', 'Ｚ', '１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '｀', '”', '’',
+                        '“', '‘', '＿', '－', '～', '＝', '＋', '＼', '｜', '／', '（', '）', '［', '］', '【', '】',
+                        '｛', '｝', '＜', '＞', '．', '，', '；', '：', '！', '＾', '％', '＃', '＠', '＄', '＆', '？',
+                        '＊', '。'},
+                {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                        'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6',
+                        '7', '8', '9', '0', '`', '&quot;', '\'', '&quot;', '\'', '_', '-', '~', '=', '+', '\\', '|', '/',
+                        '(', ')', '[', ']', '[', ']', '{', '}', '&lt;', '&gt;', '.', ',', ';', ':', '!', '^', '%', '#', '@',
+                        '$', '&amp;', '?', '*', '.'}
+        };
+        for (int i = 0; i &lt; chars.length; i++) {
+            for (int j = 0; j &lt; charTable[0].length; j++) {
+                if (chars[i] == charTable[0][j]) {
+                    chars[i] = charTable[1][j];
+                }
+            }
+        }
+        System.out.println(String.valueOf(chars));
+    }
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591178131634.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[mybatisplus代码生成器]]></title>
         <id>https://flakkaqi.github.io/post/mybatisplus-dai-ma-sheng-cheng-qi/</id>
@@ -1063,26 +1107,6 @@ public class One {
 <a href="">油猴脚本下载</a><br>
 <a href="http://www.win4000.com/">高清壁纸下载</a><br>
 <img src="https://flakkaqi.github.io/post-images/1589004052469.webp" alt="" loading="lazy"></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[有趣的博客网站~]]></title>
-        <id>https://flakkaqi.github.io/post/you-qu-de-bo-ke-wang-zhan-~/</id>
-        <link href="https://flakkaqi.github.io/post/you-qu-de-bo-ke-wang-zhan-~/">
-        </link>
-        <updated>2020-04-18T01:56:14.000Z</updated>
-        <summary type="html"><![CDATA[<p>这里会有很多有趣的开源项目传送门👇</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>这里会有很多有趣的开源项目传送门👇</p>
-<!-- more -->
-<h2 id="王者">🥇王者</h2>
-<h2 id="白银">🥈白银</h2>
-<p><strong>no1</strong>: <a href="http://mouto.org/">卜卜口</a></p>
-<pre><code>前端开发、人像写真、二次元、有趣的开源项目、博客、多链接
-</code></pre>
-<h2 id="青铜">🥉青铜</h2>
-<h2 id="屌丝">😹屌丝</h2>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589004080541.png" alt="" loading="lazy"></figure>
 ]]></content>
     </entry>
 </feed>

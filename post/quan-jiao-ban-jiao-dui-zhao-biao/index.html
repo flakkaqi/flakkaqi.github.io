@@ -62,75 +62,45 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">mybatisplus代码生成器</h1>
-                    <p class="entry-census">发布于 2020-05-29</p>
+                    <h1 class="entry-title">全角、半角对照表</h1>
+                    <p class="entry-census">发布于 2020-06-03</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p>😇使用myabtisplus代码生成器可以大大提升代码的开发效率</p>
+                    <p>🤡用户输入的全角可能在后台处理成半角，很多方法并不适用所有的全角半角转换，所以，最简单粗暴的方法就是遍历.......</p>
 <!-- more -->
-<h3 id="引入依赖">引入依赖</h3>
-<pre><code class="language-java">import com.baomidou.mybatisplus.enums.IdType;
-import com.baomidou.mybatisplus.generator.AutoGenerator;
-import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
-import com.baomidou.mybatisplus.generator.config.GlobalConfig;
-import com.baomidou.mybatisplus.generator.config.PackageConfig;
-import com.baomidou.mybatisplus.generator.config.StrategyConfig;
-import com.baomidou.mybatisplus.generator.config.rules.DbType;
-import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+<h3 id="全角半角字符对照表">全角半角字符对照表</h3>
+<pre><code>ａ a ｂ b ｃ c ｄ d ｅ e ｆ f ｇ g ｈ h ｉ i ｊ j ｋ k ｌ l ｍ m ｎ n ｏ o ｐ p ｑ q ｒ r ｓ s ｔ t ｕ u ｖ v ｗ w ｘ x ｙ y ｚ z Ａ A Ｂ B Ｃ C Ｄ D Ｅ E Ｆ F Ｇ G Ｈ H Ｉ I Ｊ J Ｋ K Ｌ L Ｍ M Ｎ N Ｏ O Ｐ P Ｑ Q Ｒ R Ｓ S Ｔ T Ｕ U Ｖ V Ｗ W Ｘ X Ｙ Y Ｚ Z １ 1 ２ 2 ３ 3 ４ 4 ５ 5 ６ 6 ７ 7 ８ 8 ９ 9 ０ 0 ｀ ` ” &quot; ’ ' “ &quot; ‘ ' ＿ _ － - ～ ~ ＝ = ＋ + ＼ \ ｜ | ／ / （ ( ） ) ［ [ ］ ] 【 [ 】 ] ｛ { ｝ } ＜ &lt; ＞ &gt; ． . ， , ； ; ： : ！ ! ＾ ^ ％ % ＃ # ＠ @ ＄ $ ＆ &amp; ？ ? ＊ * 。 .
 </code></pre>
-<h3 id="工具类">工具类</h3>
-<pre><code class="language-java">
-public class GeneratorTest {
-
-    public static void main(String[] args) {
-        //1、全局配置
-        GlobalConfig config = new GlobalConfig();
-        config.setActiveRecord(true)//开启AR模式
-                .setAuthor(&quot;qishuai&quot;)//设置作者
-                //生成路径(一般都是生成在此项目的src/main/java下面)
-                .setOutputDir(&quot;C:\\javaProject\\spacework\\src\\main\\java&quot;)
-                .setFileOverride(false)//第二次生成不会把第一次生成的覆盖掉
-                .setIdType(IdType.AUTO)//主键策略
-                .setServiceName(&quot;%sService&quot;)//生成的service接口名字首字母是否为I，这样设置就没有I
-                .setBaseResultMap(true)//生成resultMap
-                .setBaseColumnList(true)//在xml中生成基础列
-                .setOpen(false);//当代码生成完成之后是否打开代码所在的文件夹
-        //2、数据源配置
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDbType(DbType.ORACLE)//数据库类型
-                .setDriverName(&quot;dm.jdbc.driver.DmDriver&quot;)
-                .setUrl(&quot;jdbc:**://**.**.**.**:****:****/***&quot;)
-                .setUsername(&quot;******&quot;)
-                .setPassword(&quot;*******&quot;);
-        //3、策略配置
-        StrategyConfig strategyConfig = new StrategyConfig();
-        strategyConfig.setCapitalMode(true)//开启全局大写命名
-                .setDbColumnUnderline(true)//表名字段名使用下划线
-                .setNaming(NamingStrategy.underline_to_camel)//下划线到驼峰的命名方式
-                .setTablePrefix(&quot;&quot;)//表名前缀
-                .setEntityLombokModel(true)//使用lombok
-                .setInclude(&quot;BASIC_DATA_T&quot;);//逆向工程使用的表
-        //4、包名策略配置
-        PackageConfig packageConfig = new PackageConfig();
-        packageConfig.setParent(&quot;com.test.bapp.demo&quot;)//设置包名的parent
-                .setMapper(&quot;mapper&quot;)
-                .setService(&quot;service&quot;)
-                .setController(&quot;controller&quot;)
-                .setEntity(&quot;entity&quot;)
-                .setXml(&quot;mapper.mapping&quot;);//设置xml文件的目录
-        //5、整合配置
-        AutoGenerator autoGenerator = new AutoGenerator();
-        autoGenerator.setGlobalConfig(config)
-                .setDataSource(dataSourceConfig)
-                .setStrategy(strategyConfig)
-                .setPackageInfo(packageConfig);
-        //6、执行
-        autoGenerator.execute();
+<pre><code class="language-java">public static void main(String[] args) {
+        String arr = &quot;中国，中文，标点符号！你好？１２３４５＠＃【】+=-（）。&quot;;
+        char[] chars = arr.toCharArray();
+        char[][] charTable = {
+                {'ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ',
+                        'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ', 'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ',
+                        'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ',
+                        'Ｘ', 'Ｙ', 'Ｚ', '１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '｀', '”', '’',
+                        '“', '‘', '＿', '－', '～', '＝', '＋', '＼', '｜', '／', '（', '）', '［', '］', '【', '】',
+                        '｛', '｝', '＜', '＞', '．', '，', '；', '：', '！', '＾', '％', '＃', '＠', '＄', '＆', '？',
+                        '＊', '。'},
+                {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                        'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6',
+                        '7', '8', '9', '0', '`', '&quot;', '\'', '&quot;', '\'', '_', '-', '~', '=', '+', '\\', '|', '/',
+                        '(', ')', '[', ']', '[', ']', '{', '}', '&lt;', '&gt;', '.', ',', ';', ':', '!', '^', '%', '#', '@',
+                        '$', '&amp;', '?', '*', '.'}
+        };
+        for (int i = 0; i &lt; chars.length; i++) {
+            for (int j = 0; j &lt; charTable[0].length; j++) {
+                if (chars[i] == charTable[0][j]) {
+                    chars[i] = charTable[1][j];
+                }
+            }
+        }
+        System.out.println(String.valueOf(chars));
     }
-}
 </code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1590716277577.jpg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591178131634.jpg" alt="" loading="lazy"></figure>
 
                 </div>
             </article>
@@ -140,20 +110,14 @@ public class GeneratorTest {
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
-                    <div class="doc-footer-nav-text">
-                        <i class="mdui-icon material-icons">arrow_back</i>
-                        <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">全角、半角对照表</div>
-                    </div>
-                </a>
+                <div class="mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left"></div>
                 
                 
-                <a href="https://flakkaqi.github.io/post/java-dao-chu-excel-gong-ju-lei/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/mybatisplus-dai-ma-sheng-cheng-qi/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">java导出EXCEL工具类</div>
+                        <div class="doc-footer-nav-chapter">mybatisplus代码生成器</div>
                     </div>
                 </a>
                 
