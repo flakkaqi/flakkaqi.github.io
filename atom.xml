@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的微博客</title>
-    <updated>2020-06-03T11:16:49.021Z</updated>
+    <updated>2020-06-09T04:07:48.546Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
@@ -10,6 +10,84 @@
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 祁先生的微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[springboot创建定时任务]]></title>
+        <id>https://flakkaqi.github.io/post/springboot-chuang-jian-ding-shi-ren-wu/</id>
+        <link href="https://flakkaqi.github.io/post/springboot-chuang-jian-ding-shi-ren-wu/">
+        </link>
+        <updated>2020-06-09T03:43:42.000Z</updated>
+        <summary type="html"><![CDATA[<p>😕最简单的定时任务。定时时间最好放在配置文件里。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>😕最简单的定时任务。定时时间最好放在配置文件里。</p>
+<!-- more -->
+<h3 id="定时任务">定时任务</h3>
+<pre><code class="language-java">import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/9 10:05
+ * @Description: 每天定时更新问卷状态
+ */
+@Configuration      //1.主要用于标记配置类，兼备Component的效果。
+@EnableScheduling   // 2.开启定时任务
+@PropertySource(&quot;classpath:questionnaire.properties&quot;)
+public class QuestionnaireTimingJob {
+
+    private static final Logger logger = LoggerFactory.getLogger(QuestionnaireTimingJob.class);
+
+    @Value(&quot;${baseRestUrl}&quot;)
+    private String baseUrl;
+
+    @Scheduled(cron = &quot;${task.questionnaireJob.corn}&quot;)
+    public void process() {
+        logger.info(&quot;执行静态定时任务:xxxxxxx&quot;+ LocalDateTime.now());
+    }
+
+    /**
+     * 置已经过期的问卷状态为已失效（已完成）
+     *
+     * @param data
+     * @throws Exception
+     */
+}
+</code></pre>
+<h3 id="配置文件application-jobyml">配置文件：application-job.yml</h3>
+<pre><code class="language-yml">task:
+  questionnaireJob:
+    corn: 0 0 23 * * ?
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591674724449.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[springboot注解读取配置文件的值]]></title>
+        <id>https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/</id>
+        <link href="https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/">
+        </link>
+        <updated>2020-06-09T03:08:25.000Z</updated>
+        <summary type="html"><![CDATA[<p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
+<!-- more -->
+<p>配置文件：questionnaire.properties</p>
+<pre><code>baseRestUrl=http://xxxxxx.xxx.xxxx.cn/questionnaire/
+</code></pre>
+<p>使用该配置文件的类</p>
+<pre><code>@PropertySource(&quot;classpath:questionnaire.properties&quot;)
+public class QuestionnaireTimingJob {
+        @Value(&quot;${baseRestUrl}&quot;)
+         private String baseUrl;
+}
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591673719380.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[全角、半角对照表]]></title>
         <id>https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/</id>
@@ -997,116 +1075,6 @@ StringBuilder tr = new StringBuilder();
        }
 </code></pre>
 <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003927748.webp" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Java 实现文件和base64字符串互转]]></title>
-        <id>https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/</id>
-        <link href="https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/">
-        </link>
-        <updated>2020-04-26T06:55:56.000Z</updated>
-        <summary type="html"><![CDATA[<p>🤖有时候吧，前端给后台传的文件可能是经过BASE64转码后的字符串，到了后端我们需要对其进行解码。以下代码就是一个亲测有用的实现过程。那偶不谢.</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🤖有时候吧，前端给后台传的文件可能是经过BASE64转码后的字符串，到了后端我们需要对其进行解码。以下代码就是一个亲测有用的实现过程。那偶不谢.</p>
-<!-- more -->
-<p>😲具体代码如下：</p>
-<pre><code class="language-java">package main.java.demo;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-
-/**
- * 适用大部分格式的文件
- *
- * @misterqi
- */
-public class One {
-    public static void main(String[] args) {
-        One t = new One();
-        String str = t.GetImageStr(&quot;C:/Users/QiShuai/Pictures/background/centerbg.jpg&quot;);
-        System.out.println(str);
-        boolean flag = t.GenerateImage(str, &quot;C:/Users/QiShuai/Pictures/background/centerbg2.jpg&quot;);
-        System.out.println(flag);
-    }
-
-    /**
-     * 将文件转化为字节数组字符串，并对其进行Base64编码处理
-     *
-     * @param imgFile
-     * @return
-     */
-    public static String GetImageStr(String imgFile) {
-        InputStream in = null;
-        byte[] data = null;
-        // 读取文件字节数组
-        try {
-            in = new FileInputStream(imgFile);
-            data = new byte[in.available()];
-            in.read(data);
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // 对字节数组Base64编码
-        BASE64Encoder encoder = new BASE64Encoder();
-        // 返回Base64编码过的字节数组字符串
-        return encoder.encode(data);
-    }
-
-    /**
-     * 根据字节数组字符串进行Base64解码并生成文件
-     *
-     * @param imgStr
-     * @param savedImagePath
-     * @return
-     */
-    public static boolean GenerateImage(String imgStr, String savedImagePath) {
-        // 文件字节数组字符串数据为空
-        if (imgStr == null)
-            return false;
-        BASE64Decoder decoder = new BASE64Decoder();
-        try {
-            // Base64解码
-            byte[] b = decoder.decodeBuffer(imgStr);
-            for (int i = 0; i &lt; b.length; ++i) {
-                {// 调整异常数据
-                    if (b[i] &lt; 0)
-                        b[i] += 256;
-                }
-            }
-            // 生成文件
-            OutputStream out = new FileOutputStream(savedImagePath);
-            out.write(b);
-            out.flush();
-            out.close();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-}
-</code></pre>
-<p>🤤可以使用随便一个文件进行测试<br>
-<img src="https://flakkaqi.github.io/post-images/1589004032405.webp" alt="" loading="lazy"></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[友情链接]]></title>
-        <id>https://flakkaqi.github.io/post/you-qing-lian-jie/</id>
-        <link href="https://flakkaqi.github.io/post/you-qing-lian-jie/">
-        </link>
-        <updated>2020-04-18T02:38:52.000Z</updated>
-        <content type="html"><![CDATA[<p><a href="https://greasyfork.org/zh-CN/#home-step-1">脚本管理器安装</a><br>
-<a href="">油猴脚本下载</a><br>
-<a href="http://www.win4000.com/">高清壁纸下载</a><br>
-<img src="https://flakkaqi.github.io/post-images/1589004052469.webp" alt="" loading="lazy"></p>
 ]]></content>
     </entry>
 </feed>

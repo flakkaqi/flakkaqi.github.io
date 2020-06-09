@@ -9,11 +9,12 @@
     <meta http-equiv="Cache-Control" content="no-siteapp"/>
     <link rel="stylesheet" href="/styles/main.css">
     <link rel="stylesheet" href="//cdnjs.loli.net/ajax/libs/mdui/0.4.3/css/mdui.min.css">
+    <link rel="stylesheet" href="/media/css/post.css">
     <link rel="stylesheet" href="/media/live2d/css/live2d.css" />
     
 </head>
 <body class=" mdui-appbar-with-toolbar  mdui-theme-primary-pink mdui-theme-accent-pink">
-        <header class="mdui-toolbar mdui-color-pink mdui-appbar-fixed mdui-appbar-scroll-toolbar-hide" style="z-index: 1000">
+<header class="mdui-toolbar mdui-color-pink mdui-appbar-fixed mdui-appbar-scroll-toolbar-hide" style="z-index: 1000">
     <a href="javascript:;" mdui-drawer="{target: '#left-drawer',overlay:true}" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">menu</i></a>
     <span class="mdui-typo-title">祁先生的微博客</span>
     <div class="mdui-toolbar-spacer"></div>
@@ -21,7 +22,7 @@
     <a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">more_vert</i></a>
 </header>
 
-        <div class="mdui-drawer mdui-color-white mdui-drawer-full-height mdui-drawer-close" id="left-drawer">
+<div class="mdui-drawer mdui-color-white mdui-drawer-full-height mdui-drawer-close" id="left-drawer">
     <ul class="mdui-list">
         <li class="mdui-subheader">菜单</li>
         
@@ -56,56 +57,89 @@
     </ul>
 </div>
 
+<div id="content" class="site-content">
+    <div id="primary" class="content-area">
+        <main id="main" class="site-main" role="main">
+            <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
+                <header class="entry-header">
+                    <h1 class="entry-title">springboot注解读取配置文件的值</h1>
+                    <p class="entry-census">发布于 2020-06-09</p>
+                    <hr>
+                </header>
+                <div class="neko">
+                    <p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
+<!-- more -->
+<p>配置文件：questionnaire.properties</p>
+<pre><code>baseRestUrl=http://xxxxxx.xxx.xxxx.cn/questionnaire/
+</code></pre>
+<p>使用该配置文件的类</p>
+<pre><code>@PropertySource(&quot;classpath:questionnaire.properties&quot;)
+public class QuestionnaireTimingJob {
+        @Value(&quot;${baseRestUrl}&quot;)
+         private String baseUrl;
+}
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591673719380.jpg" alt="" loading="lazy"></figure>
+
+                </div>
+            </article>
+        </main>
+    </div>
+    <div class="doc-footer-nav mdui-color-theme">
         <div class="mdui-container">
-            <div class="mdui-row mdui-row-gapless">
-                <div class="k-container">
-                    <div class="head_card-offset"></div>
-                    
-    <div class="mdui-card">
-        <div class="mdui-card-media">
-            <img src="https://flakkaqi.github.io/post-images/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi.jpg"/>
-            <div class="mdui-card-media-covered">
-                <div class="mdui-card-primary">
-                    <div class="mdui-card-primary-title">springboot注解读取配置文件的值</div>
-                    <div class="mdui-card-primary-subtitle"><p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
-</div>
-                </div>
-                <div class="mdui-card-actions" style="float:right;">
-                    <a href="https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/" class="mdui-btn mdui-ripple mdui-ripple-white">点击查看</a>
-                </div>
+            <div class="mdui-row">
+                
+                <a href="https://flakkaqi.github.io/post/springboot-chuang-jian-ding-shi-ren-wu/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                    <div class="doc-footer-nav-text">
+                        <i class="mdui-icon material-icons">arrow_back</i>
+                        <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">springboot创建定时任务</div>
+                    </div>
+                </a>
+                
+                
+                <a href="https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                    <div class="doc-footer-nav-text">
+                        <i class="mdui-icon material-icons">arrow_forward</i>
+                        <span class="doc-footer-nav-direction">下一篇文章</span>
+                        <div class="doc-footer-nav-chapter">全角、半角对照表</div>
+                    </div>
+                </a>
+                
             </div>
         </div>
     </div>
-    <div class="head_card-offset"></div>
+    <br>
+    
+        
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
 
-    <div class="mdui-card">
-        <div class="mdui-card-media">
-            <img src="https://flakkaqi.github.io/post-images/li-yong-redis-sheng-cheng-shu-ju-ku-quan-ju-wei-yi-xing-id.jpg"/>
-            <div class="mdui-card-media-covered">
-                <div class="mdui-card-primary">
-                    <div class="mdui-card-primary-title">利用Redis生成数据库全局唯一性id</div>
-                    <div class="mdui-card-primary-subtitle"><p>🔊UUID本身满足分布式唯一的ID,只是长度太长，在很多场景中无法适用，尤其在生成单号的时候，一般单号都需要能看到日期，数量等订单信息。当然在分布式中还有其他生成方式，比如雪花算法等可自行百度。这里介绍利用redis生成全局唯一id的方法：实现环境是springboot</p>
+<div id="gitalk-container"></div>
+
+<script>
+
+    var gitalk = new Gitalk({
+        clientID: '0a8625830a294bf0361d',
+        clientSecret: '5c3204f8aa4e2002a4e25b561b9238deb0db7b8c',
+        repo: 'flakkaqi.github.io',
+        owner: 'flakkaqi',
+        admin: ['flakkaqi'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+    })
+
+    gitalk.render('gitalk-container')
+
+</script>
+
+        
+
+        
+    
+    <div class="comment"></div>
 </div>
-                </div>
-                <div class="mdui-card-actions" style="float:right;">
-                    <a href="https://flakkaqi.github.io/post/li-yong-redis-sheng-cheng-shu-ju-ku-quan-ju-wei-yi-xing-id/" class="mdui-btn mdui-ripple mdui-ripple-white">点击查看</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="head_card-offset"></div>
-
-
-                </div>
-            </div>
-            <div class="mdui-row mdui-row-gapless">
-                <div class="k-container">
-                    
-
-                </div>
-            </div>
-        </div>
-        <footer class="mdui-container footer ">
+<footer class="mdui-container footer ">
     <div class="head_card-offset"></div>
     <div class="mdui-row mdui-row-gapless">
         <div class="k-container">
@@ -153,6 +187,25 @@
 <script type="text/javascript" src="/media/live2d/js/live2d.js"></script>
 <script type="text/javascript" src="/media/live2d/js/message.js"></script>
 
-    </body>
+</body>
 <script src="//cdnjs.loli.net/ajax/libs/mdui/0.4.3/js/mdui.min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    $('.comment').bind('DOMNodeInserted',()=>{
+        $('.comment').unbind()
+
+        $('.vbtn').addClass(' mdui-btn mdui-color-theme-accent mdui-ripple')
+    })
+
+    let valine = new Valine({
+        el: '.comment',
+        
+        
+        
+        path: window.location.pathname,
+        pageSize: 30,
+        avatar:'mm',
+        notify:true
+    })
+</script>
 </html>
