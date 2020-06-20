@@ -62,44 +62,102 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">springboot创建定时任务</h1>
+                    <h1 class="entry-title">springboot+mybatis+swaager</h1>
                     <p class="entry-census">发布于 2020-06-09</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p>😕最简单的定时任务。定时时间最好放在配置文件里。</p>
+                    <p>Spring Boot使用MyBatis Generator、Swagger、MyBatis是Java目前主流的ORM框架，可以参考这篇文章：<a href="http://www.ityouknow.com/springboot/2016/11/06/spring-boot-mybatis.html">在Spring Boot中使用MyBatis</a><br>
+这篇文章来将介绍MyBatis Generator，（简称MBG，下文使用这个简称），该插件可以很方便的生成实体类、Mapper接口代码等，提高开发效率，它有点像.NET的EF框架中的DB First。另外，顺便介绍Spring Boot如何集成Swagger。</p>
 <!-- more -->
-<h3 id="定时任务">定时任务</h3>
-<pre><code class="language-java">import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+<p><a href="https://www.cnblogs.com/FireworksEasyCool/p/11133827.html">点击跳转参考文章</a></p>
+<h2 id="一-创建mysql数据库">一、创建MySQL数据库</h2>
+<pre><code class="language-sql">create database generatortest default character set utf8mb4 collate utf8mb4_unicode_ci;
+use generatortest;
+create user 'generatortest'@'localhost' identified by 'generatortest123';
+grant all privileges on generatortest.* to 'generatortest'@'localhost';
+flush privileges;
 
-@Configuration      //1.主要用于标记配置类，兼备Component的效果。
-@EnableScheduling   // 2.开启定时任务
-public class QuestionnaireTimingJob {
+CREATE TABLE `user`
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  user_name VARCHAR(50) NOT NULL COMMENT '用户名',
+  `password` VARCHAR(50) NOT NULL COMMENT '密码',
+  email VARCHAR(50) COMMENT '邮箱',
+  avatar VARCHAR(255) COMMENT '头像',
+  create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT(1) default 0 COMMENT '逻辑删除',
+  PRIMARY KEY (id)
+);
+ALTER TABLE `user` COMMENT '用户表';
 
-    private static final Logger logger = LoggerFactory.getLogger(QuestionnaireTimingJob.class);
+CREATE TABLE role
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+  role_name VARCHAR(50) NOT NULL COMMENT '角色名',
+  enabled TINYINT(1) default 1 NOT NULL COMMENT '有效标志',
+  create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT(1) default 0 NOT NULL COMMENT '逻辑删除',
+  PRIMARY KEY (id)
+);
+ALTER TABLE role COMMENT '角色表';
 
-    @Value(&quot;${task.questionnaireJob.baseRestUrl}&quot;)
-    private String baseUrl;
+CREATE TABLE permission
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '权限ID',
+  permission_name VARCHAR(50) NOT NULL COMMENT '权限名称',
+  permission_value VARCHAR(200) NOT NULL COMMENT '权限值',
+  PRIMARY KEY (id)
+);
+ALTER TABLE permission COMMENT '权限表';
 
-    @Scheduled(cron = &quot;${task.questionnaireJob.corn}&quot;)
-    public void process() {
-        logger.info(&quot;执行静态定时任务:xxxxxxx&quot;+ LocalDateTime.now());
-    }
-}
+CREATE TABLE user_role
+(
+  user_id INT NOT NULL COMMENT '用户ID',
+  role_id INT NOT NULL COMMENT '角色ID'
+);
+ALTER TABLE user_role COMMENT '用户角色关联表';
+
+CREATE TABLE role_permission
+(
+  role_id INT NOT NULL COMMENT '角色ID',
+  permission_id INT NOT NULL COMMENT '权限ID'
+);
+ALTER TABLE role_permission COMMENT '角色权限关联表';
 </code></pre>
-<h3 id="配置文件application-jobyml">配置文件：application-job.yml</h3>
-<pre><code class="language-yml">task:
-  questionnaireJob:
-    corn: 0 0 23 * * ?
-    baseRestUrl：http://xxxx.xxx.cclssksls.cclslls/skss/
+<h2 id="二-创建maven项目">二、创建maven项目</h2>
+<h3 id="1-创建maven工程">1、创建maven工程</h3>
+<p>可以参考<a href="https://www.cnblogs.com/qinxu/p/9648429.html">idea创建maven项目</a></p>
+<h3 id="2-pomxml">2、pom.xml</h3>
+<pre><code class="language-xml">&lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+            &lt;version&gt;2.0.2.RELEASE&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;mysql&lt;/groupId&gt;
+            &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+            &lt;version&gt;5.0.8&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+            &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
+            &lt;version&gt;3.5.5&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.mybatis.generator&lt;/groupId&gt;
+            &lt;artifactId&gt;mybatis-generator-core&lt;/artifactId&gt;
+            &lt;version&gt;1.3.7&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+    ```
+### 3、
+
+![](https://flakkaqi.github.io/post-images/1592639968494.webp)
 </code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591674724449.jpg" alt="" loading="lazy"></figure>
 
                 </div>
             </article>
@@ -109,20 +167,20 @@ public class QuestionnaireTimingJob {
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/springbootmybatisswaager/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/shen-fen-zheng-xiao-yan-gui-ze/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">springboot+mybatis+swaager</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">身份证校验规则</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/springboot-chuang-jian-ding-shi-ren-wu/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">springboot注解读取配置文件的值</div>
+                        <div class="doc-footer-nav-chapter">springboot创建定时任务</div>
                     </div>
                 </a>
                 

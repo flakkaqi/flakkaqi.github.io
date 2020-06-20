@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的微博客</title>
-    <updated>2020-06-09T04:07:48.546Z</updated>
+    <updated>2020-06-20T07:59:54.585Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
@@ -10,6 +10,169 @@
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 祁先生的微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[身份证校验规则]]></title>
+        <id>https://flakkaqi.github.io/post/shen-fen-zheng-xiao-yan-gui-ze/</id>
+        <link href="https://flakkaqi.github.io/post/shen-fen-zheng-xiao-yan-gui-ze/">
+        </link>
+        <updated>2020-06-20T07:51:20.000Z</updated>
+        <content type="html"><![CDATA[<pre><code>     * 身份证15位编码规则：dddddd yymmdd xx p
+     * dddddd：6位地区编码
+     * yymmdd: 出生年(两位年)月日，如：910215
+     * xx: 顺序编码，系统产生，无法确定
+     * p: 性别，奇数为男，偶数为女
+     * 身份证18位编码规则：dddddd yyyymmdd xxx y
+     * dddddd：6位地区编码
+     * yyyymmdd: 出生年(四位年)月日，如：19910215
+     * xxx：顺序编码，系统产生，无法确定，奇数为男，偶数为女
+     * y: 校验码，该位数值可通过前17位计算获得
+     * 前17位号码加权因子为 Wi = [ 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 ]
+     * 验证位 Y = [ 1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2 ]
+     * 如果验证码恰好是10，为了保证身份证是十八位，那么第十八位将用X来代替
+     * 校验位计算公式：Y_P = mod( ∑(Ai×Wi),11 )
+     * i为身份证号码1...17 位; Y_P为校验码Y所在校验码数组位置
+</code></pre>
+<pre><code class="language-js">         function validateIdCard(idCard){
+            //15位和18位身份证号码的正则表达式
+            var regIdCard=/^(^[1-9]\d{7}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}$)|(^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])((\d{4})|\d{3}[Xx])$)$/;
+            //如果通过该验证，说明身份证格式正确，但准确性还需计算
+            if(regIdCard.test(idCard)){
+                if(idCard.length==18){
+                    var idCardWi=new Array( 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 ); //将前17位加权因子保存在数组里
+                    var idCardY=new Array( 1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2 ); //这是除以11后，可能产生的11位余数、验证码，也保存成数组
+                    var idCardWiSum=0; //用来保存前17位各自乖以加权因子后的总和
+                    for(var i=0;i&lt;17;i++){
+                        idCardWiSum+=idCard.substring(i,i+1)*idCardWi[i];
+                    }
+                    var idCardMod=idCardWiSum%11;//计算出校验码所在数组的位置
+                    var idCardLast=idCard.substring(17);//得到最后一位身份证号码
+                    //如果等于2，则说明校验码是10，身份证号码最后一位应该是X
+                    if(idCardMod==2){
+                        if(idCardLast==&quot;X&quot;||idCardLast==&quot;x&quot;){
+                            alert(&quot;恭喜通过验证啦！&quot;);
+                        }else{
+                            alert(&quot;身份证号码错误！&quot;);
+                        }
+                    }else{
+                        //用计算出的验证码与最后一位身份证号码匹配，如果一致，说明通过，否则是无效的身份证号码
+                        if(idCardLast==idCardY[idCardMod]){
+                            alert(&quot;恭喜通过验证啦！&quot;);
+                        }else{
+                            alert(&quot;身份证号码错误！&quot;);
+                        }
+                    }
+                }
+            }else{
+                alert(&quot;身份证格式不正确!&quot;);
+            }
+        }
+    ``` 
+![](https://flakkaqi.github.io/post-images/1592639889017.png)
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[springboot+mybatis+swaager]]></title>
+        <id>https://flakkaqi.github.io/post/springbootmybatisswaager/</id>
+        <link href="https://flakkaqi.github.io/post/springbootmybatisswaager/">
+        </link>
+        <updated>2020-06-09T06:25:40.000Z</updated>
+        <summary type="html"><![CDATA[<p>Spring Boot使用MyBatis Generator、Swagger、MyBatis是Java目前主流的ORM框架，可以参考这篇文章：<a href="http://www.ityouknow.com/springboot/2016/11/06/spring-boot-mybatis.html">在Spring Boot中使用MyBatis</a><br>
+这篇文章来将介绍MyBatis Generator，（简称MBG，下文使用这个简称），该插件可以很方便的生成实体类、Mapper接口代码等，提高开发效率，它有点像.NET的EF框架中的DB First。另外，顺便介绍Spring Boot如何集成Swagger。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>Spring Boot使用MyBatis Generator、Swagger、MyBatis是Java目前主流的ORM框架，可以参考这篇文章：<a href="http://www.ityouknow.com/springboot/2016/11/06/spring-boot-mybatis.html">在Spring Boot中使用MyBatis</a><br>
+这篇文章来将介绍MyBatis Generator，（简称MBG，下文使用这个简称），该插件可以很方便的生成实体类、Mapper接口代码等，提高开发效率，它有点像.NET的EF框架中的DB First。另外，顺便介绍Spring Boot如何集成Swagger。</p>
+<!-- more -->
+<p><a href="https://www.cnblogs.com/FireworksEasyCool/p/11133827.html">点击跳转参考文章</a></p>
+<h2 id="一-创建mysql数据库">一、创建MySQL数据库</h2>
+<pre><code class="language-sql">create database generatortest default character set utf8mb4 collate utf8mb4_unicode_ci;
+use generatortest;
+create user 'generatortest'@'localhost' identified by 'generatortest123';
+grant all privileges on generatortest.* to 'generatortest'@'localhost';
+flush privileges;
+
+CREATE TABLE `user`
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  user_name VARCHAR(50) NOT NULL COMMENT '用户名',
+  `password` VARCHAR(50) NOT NULL COMMENT '密码',
+  email VARCHAR(50) COMMENT '邮箱',
+  avatar VARCHAR(255) COMMENT '头像',
+  create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT(1) default 0 COMMENT '逻辑删除',
+  PRIMARY KEY (id)
+);
+ALTER TABLE `user` COMMENT '用户表';
+
+CREATE TABLE role
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '角色ID',
+  role_name VARCHAR(50) NOT NULL COMMENT '角色名',
+  enabled TINYINT(1) default 1 NOT NULL COMMENT '有效标志',
+  create_time DATETIME NOT NULL COMMENT '创建时间',
+    update_time DATETIME NOT NULL COMMENT '更新时间',
+    deleted TINYINT(1) default 0 NOT NULL COMMENT '逻辑删除',
+  PRIMARY KEY (id)
+);
+ALTER TABLE role COMMENT '角色表';
+
+CREATE TABLE permission
+(
+  id INT NOT NULL AUTO_INCREMENT COMMENT '权限ID',
+  permission_name VARCHAR(50) NOT NULL COMMENT '权限名称',
+  permission_value VARCHAR(200) NOT NULL COMMENT '权限值',
+  PRIMARY KEY (id)
+);
+ALTER TABLE permission COMMENT '权限表';
+
+CREATE TABLE user_role
+(
+  user_id INT NOT NULL COMMENT '用户ID',
+  role_id INT NOT NULL COMMENT '角色ID'
+);
+ALTER TABLE user_role COMMENT '用户角色关联表';
+
+CREATE TABLE role_permission
+(
+  role_id INT NOT NULL COMMENT '角色ID',
+  permission_id INT NOT NULL COMMENT '权限ID'
+);
+ALTER TABLE role_permission COMMENT '角色权限关联表';
+</code></pre>
+<h2 id="二-创建maven项目">二、创建maven项目</h2>
+<h3 id="1-创建maven工程">1、创建maven工程</h3>
+<p>可以参考<a href="https://www.cnblogs.com/qinxu/p/9648429.html">idea创建maven项目</a></p>
+<h3 id="2-pomxml">2、pom.xml</h3>
+<pre><code class="language-xml">&lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+            &lt;version&gt;2.0.2.RELEASE&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;mysql&lt;/groupId&gt;
+            &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+            &lt;version&gt;5.0.8&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+            &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
+            &lt;version&gt;3.5.5&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.mybatis.generator&lt;/groupId&gt;
+            &lt;artifactId&gt;mybatis-generator-core&lt;/artifactId&gt;
+            &lt;version&gt;1.3.7&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+    ```
+### 3、
+
+![](https://flakkaqi.github.io/post-images/1592639968494.webp)
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[springboot创建定时任务]]></title>
         <id>https://flakkaqi.github.io/post/springboot-chuang-jian-ding-shi-ren-wu/</id>
@@ -29,38 +192,26 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-/**
- * @Auther: QiShuai
- * @Date: 2020/6/9 10:05
- * @Description: 每天定时更新问卷状态
- */
 @Configuration      //1.主要用于标记配置类，兼备Component的效果。
 @EnableScheduling   // 2.开启定时任务
-@PropertySource(&quot;classpath:questionnaire.properties&quot;)
 public class QuestionnaireTimingJob {
 
     private static final Logger logger = LoggerFactory.getLogger(QuestionnaireTimingJob.class);
 
-    @Value(&quot;${baseRestUrl}&quot;)
+    @Value(&quot;${task.questionnaireJob.baseRestUrl}&quot;)
     private String baseUrl;
 
     @Scheduled(cron = &quot;${task.questionnaireJob.corn}&quot;)
     public void process() {
         logger.info(&quot;执行静态定时任务:xxxxxxx&quot;+ LocalDateTime.now());
     }
-
-    /**
-     * 置已经过期的问卷状态为已失效（已完成）
-     *
-     * @param data
-     * @throws Exception
-     */
 }
 </code></pre>
 <h3 id="配置文件application-jobyml">配置文件：application-job.yml</h3>
 <pre><code class="language-yml">task:
   questionnaireJob:
     corn: 0 0 23 * * ?
+    baseRestUrl：http://xxxx.xxx.cclssksls.cclslls/skss/
 </code></pre>
 <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591674724449.jpg" alt="" loading="lazy"></figure>
 ]]></content>
@@ -930,151 +1081,6 @@ public class DemoApplicationTests {
 }
 </code></pre>
 <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003814324.webp" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[java如何将MultipartFile对象转为File对象]]></title>
-        <id>https://flakkaqi.github.io/post/java-ru-he-jiang-multipartfile-dui-xiang-zhuan-wei-file-dui-xiang/</id>
-        <link href="https://flakkaqi.github.io/post/java-ru-he-jiang-multipartfile-dui-xiang-zhuan-wei-file-dui-xiang/">
-        </link>
-        <updated>2020-04-26T11:17:49.000Z</updated>
-        <summary type="html"><![CDATA[<p>🤸‍♂话不多说，直接上代码，就是干</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🤸‍♂话不多说，直接上代码，就是干</p>
-<!-- more -->
-<pre><code class="language-java">import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-/**
- * @Auther: QiShuai
- * @Date: 2020/4/8 10:58
- * @Description:
- */
-public class MultipartFileToFile {
-    /**
-     * MultipartFile 转 File
-     *
-     * @param file
-     * @throws Exception
-     */
-    public static File multipartFileToFile(MultipartFile file) throws Exception {
-
-        File toFile = null;
-        if (file.equals(&quot;&quot;) || file.getSize() &lt;= 0) {
-            file = null;
-        } else {
-            InputStream ins = null;
-            ins = file.getInputStream();
-            toFile = new File(file.getOriginalFilename());
-            inputStreamToFile(ins, toFile);
-            ins.close();
-        }
-        return toFile;
-    }
-
-    //获取流文件
-    private static void inputStreamToFile(InputStream ins, File file) {
-        try {
-            OutputStream os = new FileOutputStream(file);
-            int bytesRead = 0;
-            byte[] buffer = new byte[8192];
-            while ((bytesRead = ins.read(buffer, 0, 8192)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
-            os.close();
-            ins.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 删除本地临时文件
-     * @param file
-     */
-    public static void deleteTempFile(File file) {
-        if (file != null) {
-            File del = new File(file.toURI());
-            del.delete();
-        }
-    }
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003908740.webp" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[java创建临时文件并写入数据]]></title>
-        <id>https://flakkaqi.github.io/post/java-chuang-jian-lin-shi-wen-jian-bing-xie-ru-shu-ju/</id>
-        <link href="https://flakkaqi.github.io/post/java-chuang-jian-lin-shi-wen-jian-bing-xie-ru-shu-ju/">
-        </link>
-        <updated>2020-04-26T11:07:15.000Z</updated>
-        <summary type="html"><![CDATA[<p>🤣创建文件可不就是为了保存数据吗？</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🤣创建文件可不就是为了保存数据吗？</p>
-<!-- more -->
-<pre><code class="language-java">// 调用：
-{
-String file = &quot;xxxx.&quot;;  //base64编码的字符串
-String fileName = &quot;xxxx.txt&quot;;
-StringBuilder tr = new StringBuilder();
-        String tempPath = tr.append(System.getProperty(&quot;java.io.tmpdir&quot;)).append(File.separator).append(fileName).toString();
-        try {
-            boolean flag = Base64Util.GenerateFile(file, tempPath);
-            if (!flag) {
-                return &quot;文件有误，请检查后重新上传！&quot;;
-            } else {
-                File tempFile = new File(tempPath);
-                //使用File对象
-&lt;!-- more --&gt;
-
-            }
-        } catch (Exception e) {
-                e.printStackTrace();
-        } finally {
-            //删除临时文件
-            File tempFile = new File(tempPath);
-            if (tempFile.exists()) {
-                tempFile.delete();
-            }
-        }
-}
-/**
-     * 根据字节数组字符串进行Base64解码并生成文件
-     *
-     * @param fileStr BASE64编码后的字符串
-     * @param savedFilePath 保存文件的路径和文件名
-     * @return 转换状态
-     */
-    public static boolean GenerateFile(String fileStr, String savedFilePath) {
-        // 文件字节数组字符串数据为空
-        if (StringUtils.isBlank(fileStr))
-            return false;
-        BASE64Decoder decoder = new BASE64Decoder();
-        try {
-            // Base64解码
-            byte[] b = decoder.decodeBuffer(fileStr);
-            for (int i = 0; i &lt; b.length; ++i) {
-                {// 调整异常数据
-                    if (b[i] &lt; 0)
-                        b[i] += 256;
-                }
-            }
-            // 生成文件
-            OutputStream out = new FileOutputStream(savedFilePath);
-            out.write(b);
-            out.flush();
-            out.close();
-            return true;
-        } catch (Exception e) {
-            return false;
-       }
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003927748.webp" alt="" loading="lazy"></figure>
 ]]></content>
     </entry>
 </feed>
