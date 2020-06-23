@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的微博客</title>
-    <updated>2020-06-20T07:59:54.585Z</updated>
+    <updated>2020-06-23T09:08:01.354Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
@@ -10,6 +10,267 @@
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 祁先生的微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[Spring boot入门【二】]]></title>
+        <id>https://flakkaqi.github.io/post/spring-boot-ru-men-er/</id>
+        <link href="https://flakkaqi.github.io/post/spring-boot-ru-men-er/">
+        </link>
+        <updated>2020-06-22T05:50:17.000Z</updated>
+        <summary type="html"><![CDATA[<p>利用Springboot构建应用程序</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>利用Springboot构建应用程序</p>
+<!-- more -->
+<h3 id="一-首先在httpsstartspringio-生成一个基础的springboot项目">一、首先在https://start.spring.io/ 生成一个基础的springboot项目</h3>
+<h3 id="二-编写spring-boot启动类">二、编写Spring boot启动类</h3>
+<p>step1：在com.example.springboot包下创建Application.java</p>
+<pre><code>package com.example.sprinboot;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 14:31
+ * @Description: springboot的启动类
+ */
+//@SpringBootApplication 以下几个注解的简单写法
+@Configuration //标记这个类作为应用上下文bean定义的源
+@EnableAutoConfiguration //告诉springboot根据类路径设置、其他bean和各种属性设置开始添加bean
+@ComponentScan  //告诉spring在指定包中寻找其他组件，配置和服务，让他找到控制器controller
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args); //springboot启动应用程序的方法
+    }
+
+    //排序并打印所有由您的应用程序创建或者由springboot自动添加的所有bean。
+    @Bean
+    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+        return args -&gt; {
+            System.out.println(&quot;Let's inspect the beans provided by Spring Boot:&quot;);
+            String[] beanNames = ctx.getBeanDefinitionNames();
+            Arrays.sort(beanNames);
+            for (String beanName : beanNames) {
+                System.out.println(beanName);
+            }
+        };
+    }
+}
+</code></pre>
+<p>step2：在com.example.springboot创建一个控制器HelloController.java</p>
+<pre><code>package com.example.sprinboot;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 14:22
+ * @Description:
+ */
+//该注解意味着该类可以由Spring MVC使用来处理Web请求，@Controller+@ResponseBody返回数据而不是视图
+@RestController
+public class HelloController {
+
+    //该注解映射路径&quot;/&quot;index()方法上，从浏览器调用或者在命令行上使用curl时，该方法返回纯文本
+    @RequestMapping(&quot;/&quot;)
+    public String index() {
+        return &quot;Greetings from Spring Boot!&quot;;
+    }
+}
+</code></pre>
+<p>step3：运行springboot启动类</p>
+<pre><code>mvnw springt-boot:run
+打印出所有的bean
+</code></pre>
+<p>step4：打开控制台使用curl调用该接口</p>
+<pre><code>curl localhost:8080
+Greetings from Spring Boot!
+</code></pre>
+<h3 id="三-添加单元测试">三、添加单元测试</h3>
+<p>step1：添加sprinboot-test依赖</p>
+<pre><code>&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+	&lt;scope&gt;test&lt;/scope&gt;
+	&lt;exclusions&gt;
+		&lt;exclusion&gt;
+			&lt;groupId&gt;org.junit.vintage&lt;/groupId&gt;
+			&lt;artifactId&gt;junit-vintage-engine&lt;/artifactId&gt;
+		&lt;/exclusion&gt;
+	&lt;/exclusions&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>step2：此处介绍两种单元测试方式，一定要注意，测试包路径一定要和被测试的包路径保持一致。<br>
+step2-1：模拟Http请求周期，编写简单的全栈测试</p>
+<pre><code>package com.example.springboot;
+
+import static org.assertj.core.api.Assertions.*;
+
+import java.net.URL;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.ResponseEntity;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 15:50
+ * @Description: 模拟Http请求周期，编写简单的全栈测试
+ */
+//嵌入式服务器从一个随机端口启动，并在运行时使用 @LocalServerPort发现的真实端口
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,classes = Application.class)
+public class HelloControllerT {
+    @LocalServerPort
+    private int port;
+
+    private URL base;
+
+    @Autowired
+    private TestRestTemplate template;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        this.base = new URL(&quot;http://localhost:&quot; + port + &quot;/&quot;);
+    }
+
+    @Test
+    public void getHello() throws Exception {
+        ResponseEntity&lt;String&gt; response = template.getForEntity(base.toString(),
+                String.class);
+        assertThat(response.getBody()).isEqualTo(&quot;Greetings from Spring Boot!&quot;);
+    }
+}
+</code></pre>
+<p>step2-2：模拟通过断点的servlet请求和响应</p>
+<pre><code>package com.example.springboot;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 15:20
+ * @Description: 模拟通过断点的servlet请求和响应
+ */
+//以下两个注解作用是注入MockMvc实例
+@SpringBootTest(classes = Application.class)  //使用该注解的话要求创建整个应用程序上下文
+@AutoConfigureMockMvc
+public class HelloControllerTest {
+
+    @Autowired
+    private MockMvc mvc;  //通过一组便捷的构建器类将http请求发送到DispatcherServlet并对结果断言
+
+    @Test
+    public void getHello() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(&quot;/&quot;)
+                .accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+                .andExpect(content().string(equalTo(&quot;Greetings from Spring Boot!&quot;)));
+    }
+}
+</code></pre>
+<h3 id="四-添加生产级服务">四、添加生产级服务</h3>
+<p>springboot的执行器模块提供多种管理服务（比如运行状态、审计、Bean等）<br>
+step1：添加依赖</p>
+<pre><code>&lt;!--springboot的执行器模块提供多种管理服务（比如运行状态、审计、Bean等）--&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+</code></pre>
+<p>step2： 检查应用程序的运行状态</p>
+<pre><code>$ curl localhost:8080/actuator/health
+{&quot;status&quot;:&quot;UP&quot;}
+</code></pre>
+<p>step3：其他的参阅<a href="https://docs.spring.io/spring-boot/docs/2.2.2.RELEASE/reference/htmlsingle/#production-ready-endpoints">端点</a></p>
+<h3 id="五-springboot-源代码">五、Springboot 源代码</h3>
+<p><a href="https://github.com/spring-projects/spring-boot/tree/master/spring-boot-project/spring-boot-starters">Spring boot源代码</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Spring boot 入门【一】]]></title>
+        <id>https://flakkaqi.github.io/post/spring-boot/</id>
+        <link href="https://flakkaqi.github.io/post/spring-boot/">
+        </link>
+        <updated>2020-06-22T01:44:36.000Z</updated>
+        <summary type="html"><![CDATA[<p>springboot开始第一天👶</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>springboot开始第一天👶</p>
+<!-- more -->
+<h2 id="一-概述">一、 概述</h2>
+<p>springboot 会让你非常容易的创建一个独立的生产级spring基础应用，而且对于它你能做的就是“开始运行”,我们采用了spring平台自主的视图和第三方文库，这样你会做最少的无用功。spring boot应用只需要非常少的配置。</p>
+<h3 id="1-特点">1、特点</h3>
+<pre><code>1.创建独立的Spring应用程序
+2.直接嵌入Tomcat，Jetty或Undertow（无需部署WAR文件）
+3.提供入门级的依赖文件来简化您的构建配置
+4.尽可能的自动配置Spring和第三方库
+5.提供可用于生产的功能，如指标，运行状况检查和外部配置
+6.完全不会生成代码，也不需要XML配置
+</code></pre>
+<h3 id="2快速入门">2.快速入门</h3>
+<p>step1：开始一个新的spring boot项目</p>
+<pre><code>使用https://start.spring.io/ 创建一个新的WEB项目，并添加web依赖。下载压缩包到本地。
+勾选示例：maven project、2.3.1、jar、8、Spring Web
+</code></pre>
+<p>step2：添加你的代码</p>
+<pre><code>
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@SpringBootApplication
+//The @RestController annotation tells Spring that this code describes an endpoint that should be made available over the web.
+@RestController
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+
+    //The @GetMapping(“/hello”) tells Spring to use our hello() method to answer requests that get sent to the http://localhost:8080/hello address.
+    @GetMapping(&quot;/hello&quot;)
+    //the @RequestParam is telling Spring to expect a name value in the request, but if it’s not there, it will use the word “World” by default.
+    public String hello(@RequestParam(value = &quot;name&quot;, defaultValue = &quot;World&quot;) String name) {
+        return String.format(&quot;Hello %s!&quot;, name);
+    }
+}
+  
+</code></pre>
+<p>The @RestController annotation tells Spring that this code describes an endpoint that should be made available over the web. The @GetMapping(“/hello”) tells Spring to use our hello() method to answer requests that get sent to the http://localhost:8080/hello address. Finally, the @RequestParam is telling Spring to expect a name value in the request, but if it’s not there, it will use the word “World” by default.</p>
+<p>step3：启动项目<br>
+打开控制台执行启动命令</p>
+<pre><code>mvnw spring-boot:run
+</code></pre>
+<p>step4：在浏览器调用接口<br>
+项目启动后我们会看到如下信息</p>
+<p><img src="https://flakkaqi.github.io/post-images/1592797368807.png" alt="" loading="lazy"><br>
+端口为 8080<br>
+可以在浏览器端输入地址：http://localhost:8080/hello?name=amy进行接口调用</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[身份证校验规则]]></title>
         <id>https://flakkaqi.github.io/post/shen-fen-zheng-xiao-yan-gui-ze/</id>
@@ -796,291 +1057,6 @@ public class HttpClientUtils {
 }
 </code></pre>
 <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589286418244.webp" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[JAVA日期比较时间大小的几种方法]]></title>
-        <id>https://flakkaqi.github.io/post/java-ri-qi-bi-jiao-shi-jian-da-xiao-de-ji-chong-fang-fa/</id>
-        <link href="https://flakkaqi.github.io/post/java-ri-qi-bi-jiao-shi-jian-da-xiao-de-ji-chong-fang-fa/">
-        </link>
-        <updated>2020-05-09T03:26:44.000Z</updated>
-        <summary type="html"><![CDATA[<p>😩随便写写</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>😩随便写写</p>
-<!-- more -->
-<h3 id="思路一">思路一：</h3>
-<p>将日期字符串转为整数进行比较</p>
-<pre><code class="language-java">/**
-     * @title: dateCompare
-     * @description: 比较日期大小
-     * @param date1 日期1
-     * @param date2 日期2
-     * @return
-     */
-    public static int dateCompare(Date date1, Date date2) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);
-        String dateFirst = dateFormat.format(date1);
-        String dateLast = dateFormat.format(date2);
-        int dateFirstIntVal = Integer.parseInt(dateFirst);
-        int dateLastIntVal = Integer.parseInt(dateLast);
-        if (dateFirstIntVal &gt; dateLastIntVal) {
-            return 1;
-        } else if (dateFirstIntVal &lt; dateLastIntVal) {
-            return -1;
-        }
-        return 0;
-    }
-
-    ```
-### 思路二：
-将字符串装维date对象进行比较
-
-``` java
-SimpleDateFormat format = new SimpleDateFormat(&quot;yyyy-MM-dd&quot;);
-            Date begin = format.parse(&quot;2020-05-02 00:00:00&quot;);
-            Date end = format.parse(&quot;2020-05-07 00:00:00&quot;);
-            if (end.getTime() &lt; begin.getTime()) 
-            //利用getTime()方法比较大小
-            }
-</code></pre>
-<p>Date对象本身还有三种自带的比较大小的方法可以使用：</p>
-<pre><code class="language-java">Date date = new Date(); //获取当前的系统时间。
-            date.before();
-            date.after();
-            date.compareTo()
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003518003.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[利用Redis生成数据库全局唯一性id]]></title>
-        <id>https://flakkaqi.github.io/post/li-yong-redis-sheng-cheng-shu-ju-ku-quan-ju-wei-yi-xing-id/</id>
-        <link href="https://flakkaqi.github.io/post/li-yong-redis-sheng-cheng-shu-ju-ku-quan-ju-wei-yi-xing-id/">
-        </link>
-        <updated>2020-04-29T03:17:46.000Z</updated>
-        <summary type="html"><![CDATA[<p>🔊UUID本身满足分布式唯一的ID,只是长度太长，在很多场景中无法适用，尤其在生成单号的时候，一般单号都需要能看到日期，数量等订单信息。当然在分布式中还有其他生成方式，比如雪花算法等可自行百度。这里介绍利用redis生成全局唯一id的方法：实现环境是springboot</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🔊UUID本身满足分布式唯一的ID,只是长度太长，在很多场景中无法适用，尤其在生成单号的时候，一般单号都需要能看到日期，数量等订单信息。当然在分布式中还有其他生成方式，比如雪花算法等可自行百度。这里介绍利用redis生成全局唯一id的方法：实现环境是springboot</p>
-<!-- more -->
-<h2 id="1利用springboot整个redis">1.利用springboot整个redis</h2>
-<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
-    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
- 
-    &lt;groupId&gt;com.example&lt;/groupId&gt;
-    &lt;artifactId&gt;demo&lt;/artifactId&gt;
-    &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
-    &lt;packaging&gt;jar&lt;/packaging&gt;
- 
-    &lt;name&gt;demo&lt;/name&gt;
-    &lt;description&gt;Demo project for Spring Boot&lt;/description&gt;
- 
-    &lt;parent&gt;
-        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-        &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
-        &lt;version&gt;1.5.8.RELEASE&lt;/version&gt;
-        &lt;relativePath/&gt; &lt;!-- lookup parent from repository --&gt;
-    &lt;/parent&gt;
- 
-    &lt;properties&gt;
-        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
-        &lt;project.reporting.outputEncoding&gt;UTF-8&lt;/project.reporting.outputEncoding&gt;
-        &lt;java.version&gt;1.8&lt;/java.version&gt;
-    &lt;/properties&gt;
- 
-    &lt;dependencies&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-        &lt;/dependency&gt;
- 
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
-            &lt;artifactId&gt;lombok&lt;/artifactId&gt;
-            &lt;optional&gt;true&lt;/optional&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
-            &lt;scope&gt;test&lt;/scope&gt;
-        &lt;/dependency&gt;
-    &lt;/dependencies&gt;
- 
-    &lt;build&gt;
-        &lt;plugins&gt;
-            &lt;plugin&gt;
-                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-                &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
-            &lt;/plugin&gt;
-        &lt;/plugins&gt;
-    &lt;/build&gt;
-&lt;/project&gt;
-</code></pre>
-<h2 id="2application-redisyml文件">2.application-redis.yml文件</h2>
-<pre><code class="language-yaml">spring:
-  redis:
-    database: 0
-    host: 127.0.0.1
-    port: 6379
-    timeout: 0  # 连接超时时间（毫秒）
-    jedis:
-      pool:
-          max-active: 20 # 连接池最大连接数（使用负值表示没有限制）
-          max-idle: 20  # 连接池中的最大空闲连接
-          max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）
-          min-idle: 0 # 连接池中的最小空闲连接
-</code></pre>
-<h2 id="3redis-config-配置">3.redis config 配置</h2>
-<!-- more -->
-<!-- more -->
-<pre><code class="language-java">package com.example.demo.config;
- 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
- 
-import java.util.Arrays;
- 
-/**
- * @Title: redis配置类
- * @Package RedisConfig
- * redis配置类
- * @author syliu
- * @create 2017/9/29 0029
- */
-@Configuration
-public class RedisConfig {
- 
- 
-    @Bean
-    public RedisTemplate&lt;String, String&gt; redisTemplate(RedisConnectionFactory factory) {
-        StringRedisTemplate template = new StringRedisTemplate(factory);
-        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
-        template.setValueSerializer(jackson2JsonRedisSerializer);
-        template.afterPropertiesSet();
-        return template;
-    }
-}
-</code></pre>
-<h2 id="4primarykeyservice">4..PrimaryKeyService</h2>
-<pre><code class="language-java">import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import java.util.Calendar;
-import java.util.Date;
-
-/**
- * 利用redis生成数据库全局唯一性id
- * * @Auther: QiShuai
- *
- * @Date: 2020/4/28 20:49
- */
-@Service
-public class PrimaryKeyService {
-
-    @Autowired
-    private RedisTemplate redisTemplate;
-
-    /**
-     * 获取年的后两位加上一年多少天+当前小时数作为前缀
-     *
-     * @param date
-     * @return
-     */
-    public String getOrderIdPrefix(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        //补两位,因为一年最多三位数
-        String monthFormat = String.format(&quot;%1$02d&quot;, month + 1);
-        //补两位，因为日最多两位数
-        String dayFormat = String.format(&quot;%1$02d&quot;, day);
-        //补两位，因为小时最多两位数
-        String hourFormat = String.format(&quot;%1$02d&quot;, hour);
-        StringBuilder uniqueId = new StringBuilder();
-        return uniqueId.append(year).append(monthFormat).append(dayFormat).append(hourFormat).toString();
-    }
-
-    /**
-     * 参数生成全局唯一ID
-     *
-     * @param prefix
-     * @return
-     */
-    public String orderId(String prefix) {
-        String key = new StringBuilder().append(&quot;DEMO:ORDER_ID_&quot;).append(prefix).toString();
-        Long increment = redisTemplate.opsForValue().increment(key, 1);
-        //往前补6位
-        return new StringBuilder().append(prefix).append(String.format(&quot;%1$06d&quot;, increment)).toString();
-    }
-
-    /**
-     * 直接生成全局唯一ID
-     * @param date  时间
-     * @return 全局唯一ID
-     */
-    public String createUniqueId(Date date) {
-
-        String orderIdPrefix = getOrderIdPrefix(date);
-        String registrationNo = orderId(orderIdPrefix);
-        return registrationNo;
-    }
-
-}
-</code></pre>
-<h2 id="5测试类">5.测试类</h2>
-<pre><code class="language-java">package com.example.demo;
- 
-import com.example.demo.service.PrimaryKeyService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
- 
-import java.util.Date;
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class DemoApplicationTests {
-    @Autowired
-    private PrimaryKeyService primaryKeyService;
- 
-    @Test
-    public void contextLoads() {
-        long startMillis = System.currentTimeMillis();
-        String orderIdPrefix = primaryKeyService.getOrderIdPrefix(new Date());
-        for (int i = 0; i &lt; 10; i++) {
-            Long aLong = primaryKeyService.orderId(orderIdPrefix);
-            System.out.println(aLong);
-        }
-        long endMillis = System.currentTimeMillis();
-        System.out.println(&quot;生成速度:&quot;+(endMillis-startMillis)+&quot;,单位毫秒&quot;);
-    }
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589003814324.webp" alt="" loading="lazy"></figure>
 ]]></content>
     </entry>
 </feed>

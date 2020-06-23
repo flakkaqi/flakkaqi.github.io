@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>祁先生的微博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="//cdnjs.loli.net/ajax/libs/mdui/0.4.3/css/mdui.min.css">
+    <link rel="stylesheet" href="/media/css/post.css">
+    <link rel="stylesheet" href="/media/live2d/css/live2d.css" />
+    
+</head>
+<body class=" mdui-appbar-with-toolbar  mdui-theme-primary-pink mdui-theme-accent-pink">
+<header class="mdui-toolbar mdui-color-pink mdui-appbar-fixed mdui-appbar-scroll-toolbar-hide" style="z-index: 1000">
+    <a href="javascript:;" mdui-drawer="{target: '#left-drawer',overlay:true}" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">menu</i></a>
+    <span class="mdui-typo-title">祁先生的微博客</span>
+    <div class="mdui-toolbar-spacer"></div>
+<!--    <a href="javascript:history.go(0);" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">search</i></a>-->
+    <a href="javascript:;" class="mdui-btn mdui-btn-icon"><i class="mdui-icon material-icons">more_vert</i></a>
+</header>
+
+<div class="mdui-drawer mdui-color-white mdui-drawer-full-height mdui-drawer-close" id="left-drawer">
+    <ul class="mdui-list">
+        <li class="mdui-subheader">菜单</li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/" class="mdui-list-item-content">首页</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/archives" class="mdui-list-item-content">归档</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/tags" class="mdui-list-item-content">标签</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/goodlink" class="mdui-list-item-content">友情链接</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/pangit" class="mdui-list-item-content">共享网盘</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/remember" class="mdui-list-item-content">点滴记忆</a>
+        </li>
+        
+        <li class="mdui-list-item mdui-ripple">
+            <a href="/post/about" class="mdui-list-item-content">关于</a>
+        </li>
+        
+    </ul>
+</div>
+
+<div id="content" class="site-content">
+    <div id="primary" class="content-area">
+        <main id="main" class="site-main" role="main">
+            <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
+                <header class="entry-header">
+                    <h1 class="entry-title">Spring boot入门【二】</h1>
+                    <p class="entry-census">发布于 2020-06-22</p>
+                    <hr>
+                </header>
+                <div class="neko">
+                    <p>利用Springboot构建应用程序</p>
+<!-- more -->
+<h3 id="一-首先在httpsstartspringio-生成一个基础的springboot项目">一、首先在https://start.spring.io/ 生成一个基础的springboot项目</h3>
+<h3 id="二-编写spring-boot启动类">二、编写Spring boot启动类</h3>
+<p>step1：在com.example.springboot包下创建Application.java</p>
+<pre><code>package com.example.sprinboot;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Arrays;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 14:31
+ * @Description: springboot的启动类
+ */
+//@SpringBootApplication 以下几个注解的简单写法
+@Configuration //标记这个类作为应用上下文bean定义的源
+@EnableAutoConfiguration //告诉springboot根据类路径设置、其他bean和各种属性设置开始添加bean
+@ComponentScan  //告诉spring在指定包中寻找其他组件，配置和服务，让他找到控制器controller
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args); //springboot启动应用程序的方法
+    }
+
+    //排序并打印所有由您的应用程序创建或者由springboot自动添加的所有bean。
+    @Bean
+    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+        return args -&gt; {
+            System.out.println(&quot;Let's inspect the beans provided by Spring Boot:&quot;);
+            String[] beanNames = ctx.getBeanDefinitionNames();
+            Arrays.sort(beanNames);
+            for (String beanName : beanNames) {
+                System.out.println(beanName);
+            }
+        };
+    }
+}
+</code></pre>
+<p>step2：在com.example.springboot创建一个控制器HelloController.java</p>
+<pre><code>package com.example.sprinboot;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 14:22
+ * @Description:
+ */
+//该注解意味着该类可以由Spring MVC使用来处理Web请求，@Controller+@ResponseBody返回数据而不是视图
+@RestController
+public class HelloController {
+
+    //该注解映射路径&quot;/&quot;index()方法上，从浏览器调用或者在命令行上使用curl时，该方法返回纯文本
+    @RequestMapping(&quot;/&quot;)
+    public String index() {
+        return &quot;Greetings from Spring Boot!&quot;;
+    }
+}
+</code></pre>
+<p>step3：运行springboot启动类</p>
+<pre><code>mvnw springt-boot:run
+打印出所有的bean
+</code></pre>
+<p>step4：打开控制台使用curl调用该接口</p>
+<pre><code>curl localhost:8080
+Greetings from Spring Boot!
+</code></pre>
+<h3 id="三-添加单元测试">三、添加单元测试</h3>
+<p>step1：添加sprinboot-test依赖</p>
+<pre><code>&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+	&lt;scope&gt;test&lt;/scope&gt;
+	&lt;exclusions&gt;
+		&lt;exclusion&gt;
+			&lt;groupId&gt;org.junit.vintage&lt;/groupId&gt;
+			&lt;artifactId&gt;junit-vintage-engine&lt;/artifactId&gt;
+		&lt;/exclusion&gt;
+	&lt;/exclusions&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>step2：此处介绍两种单元测试方式，一定要注意，测试包路径一定要和被测试的包路径保持一致。<br>
+step2-1：模拟Http请求周期，编写简单的全栈测试</p>
+<pre><code>package com.example.springboot;
+
+import static org.assertj.core.api.Assertions.*;
+
+import java.net.URL;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.ResponseEntity;
+
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 15:50
+ * @Description: 模拟Http请求周期，编写简单的全栈测试
+ */
+//嵌入式服务器从一个随机端口启动，并在运行时使用 @LocalServerPort发现的真实端口
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,classes = Application.class)
+public class HelloControllerT {
+    @LocalServerPort
+    private int port;
+
+    private URL base;
+
+    @Autowired
+    private TestRestTemplate template;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        this.base = new URL(&quot;http://localhost:&quot; + port + &quot;/&quot;);
+    }
+
+    @Test
+    public void getHello() throws Exception {
+        ResponseEntity&lt;String&gt; response = template.getForEntity(base.toString(),
+                String.class);
+        assertThat(response.getBody()).isEqualTo(&quot;Greetings from Spring Boot!&quot;);
+    }
+}
+</code></pre>
+<p>step2-2：模拟通过断点的servlet请求和响应</p>
+<pre><code>package com.example.springboot;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+/**
+ * @Auther: QiShuai
+ * @Date: 2020/6/22 15:20
+ * @Description: 模拟通过断点的servlet请求和响应
+ */
+//以下两个注解作用是注入MockMvc实例
+@SpringBootTest(classes = Application.class)  //使用该注解的话要求创建整个应用程序上下文
+@AutoConfigureMockMvc
+public class HelloControllerTest {
+
+    @Autowired
+    private MockMvc mvc;  //通过一组便捷的构建器类将http请求发送到DispatcherServlet并对结果断言
+
+    @Test
+    public void getHello() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get(&quot;/&quot;)
+                .accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+                .andExpect(content().string(equalTo(&quot;Greetings from Spring Boot!&quot;)));
+    }
+}
+</code></pre>
+<h3 id="四-添加生产级服务">四、添加生产级服务</h3>
+<p>springboot的执行器模块提供多种管理服务（比如运行状态、审计、Bean等）<br>
+step1：添加依赖</p>
+<pre><code>&lt;!--springboot的执行器模块提供多种管理服务（比如运行状态、审计、Bean等）--&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+</code></pre>
+<p>step2： 检查应用程序的运行状态</p>
+<pre><code>$ curl localhost:8080/actuator/health
+{&quot;status&quot;:&quot;UP&quot;}
+</code></pre>
+<p>step3：其他的参阅<a href="https://docs.spring.io/spring-boot/docs/2.2.2.RELEASE/reference/htmlsingle/#production-ready-endpoints">端点</a></p>
+<h3 id="五-springboot-源代码">五、Springboot 源代码</h3>
+<p><a href="https://github.com/spring-projects/spring-boot/tree/master/spring-boot-project/spring-boot-starters">Spring boot源代码</a></p>
+
+                </div>
+            </article>
+        </main>
+    </div>
+    <div class="doc-footer-nav mdui-color-theme">
+        <div class="mdui-container">
+            <div class="mdui-row">
+                
+                <div class="mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left"></div>
+                
+                
+                <a href="https://flakkaqi.github.io/post/spring-boot/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                    <div class="doc-footer-nav-text">
+                        <i class="mdui-icon material-icons">arrow_forward</i>
+                        <span class="doc-footer-nav-direction">下一篇文章</span>
+                        <div class="doc-footer-nav-chapter">Spring boot 入门【一】</div>
+                    </div>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+    <br>
+    
+        
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+    var gitalk = new Gitalk({
+        clientID: '0a8625830a294bf0361d',
+        clientSecret: '5c3204f8aa4e2002a4e25b561b9238deb0db7b8c',
+        repo: 'flakkaqi.github.io',
+        owner: 'flakkaqi',
+        admin: ['flakkaqi'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+    })
+
+    gitalk.render('gitalk-container')
+
+</script>
+
+        
+
+        
+    
+    <div class="comment"></div>
+</div>
+<footer class="mdui-container footer ">
+    <div class="head_card-offset"></div>
+    <div class="mdui-row mdui-row-gapless">
+        <div class="k-container">
+            <img width="100%" src="/media/img/skirt.png">
+        </div>
+    </div>
+
+    <div class="site-info">
+        Powered by <a href="https://github.com/flakkaqi/flakkaqi.github.io" target="_blank">flakkaqi</a>
+    </div>
+</footer>
+<div id="landlord" style="left:5px;bottom:0px;">
+    <div class="message" style="opacity:0"></div>
+    <canvas id="live2d" width="500" height="560" class="live2d"></canvas>
+    <div class="live_talk_input_body">
+        <div class="live_talk_input_name_body">
+            <input name="name" type="text" class="live_talk_name white_input" id="AIuserName" autocomplete="off" placeholder="你的名字" />
+        </div>
+        <div class="live_talk_input_text_body">
+            <input name="talk" type="text" class="live_talk_talk white_input" id="AIuserText" autocomplete="off" placeholder="要和我聊什么呀？"/>
+            <button type="button" class="live_talk_send_btn" id="talk_send">发送</button>
+        </div>
+    </div>
+    <input name="live_talk" id="live_talk" value="1" type="hidden" />
+    <div class="live_ico_box">
+        <div class="live_ico_item type_info" id="showInfoBtn"></div>
+        <div class="live_ico_item type_talk" id="showTalkBtn"></div>
+        <div class="live_ico_item type_music" id="musicButton"></div>
+        <div class="live_ico_item type_youdu" id="youduButton"></div>
+        <div class="live_ico_item type_quit" id="hideButton"></div>
+        <input name="live_statu_val" id="live_statu_val" value="0" type="hidden" />
+        <audio src="" style="display:none;" id="live2d_bgm" data-bgm="0" preload="none"></audio>
+        <input name="live2dBGM" value="https://img.apa70.com/123.mp3" type="hidden">
+        <input name="live2dBGM" value="https://img.apa70.com/123.mp3" type="hidden">
+        <input id="duType" value="douqilai,l2d_caihong" type="hidden">
+    </div>
+</div>
+<div id="open_live2d">召唤伊斯特瓦尔</div>
+<script>
+    var message_Path = '/media/live2d/';//资源目录，如果目录不对请更改
+    var talkAPI = "";//如果有类似图灵机器人的聊天接口请填写接口路径
+</script>
+<!--<script src="/media/js/jquery-3.3.1.min.js"></script>-->
+<script src="//apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="/media/live2d/js/live2d.js"></script>
+<script type="text/javascript" src="/media/live2d/js/message.js"></script>
+
+</body>
+<script src="//cdnjs.loli.net/ajax/libs/mdui/0.4.3/js/mdui.min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+    $('.comment').bind('DOMNodeInserted',()=>{
+        $('.comment').unbind()
+
+        $('.vbtn').addClass(' mdui-btn mdui-color-theme-accent mdui-ripple')
+    })
+
+    let valine = new Valine({
+        el: '.comment',
+        
+        
+        
+        path: window.location.pathname,
+        pageSize: 30,
+        avatar:'mm',
+        notify:true
+    })
+</script>
+</html>

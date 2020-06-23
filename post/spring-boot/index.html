@@ -62,64 +62,64 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">身份证校验规则</h1>
-                    <p class="entry-census">发布于 2020-06-20</p>
+                    <h1 class="entry-title">Spring boot 入门【一】</h1>
+                    <p class="entry-census">发布于 2020-06-22</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <pre><code>     * 身份证15位编码规则：dddddd yymmdd xx p
-     * dddddd：6位地区编码
-     * yymmdd: 出生年(两位年)月日，如：910215
-     * xx: 顺序编码，系统产生，无法确定
-     * p: 性别，奇数为男，偶数为女
-     * 身份证18位编码规则：dddddd yyyymmdd xxx y
-     * dddddd：6位地区编码
-     * yyyymmdd: 出生年(四位年)月日，如：19910215
-     * xxx：顺序编码，系统产生，无法确定，奇数为男，偶数为女
-     * y: 校验码，该位数值可通过前17位计算获得
-     * 前17位号码加权因子为 Wi = [ 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 ]
-     * 验证位 Y = [ 1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2 ]
-     * 如果验证码恰好是10，为了保证身份证是十八位，那么第十八位将用X来代替
-     * 校验位计算公式：Y_P = mod( ∑(Ai×Wi),11 )
-     * i为身份证号码1...17 位; Y_P为校验码Y所在校验码数组位置
+                    <p>springboot开始第一天👶</p>
+<!-- more -->
+<h2 id="一-概述">一、 概述</h2>
+<p>springboot 会让你非常容易的创建一个独立的生产级spring基础应用，而且对于它你能做的就是“开始运行”,我们采用了spring平台自主的视图和第三方文库，这样你会做最少的无用功。spring boot应用只需要非常少的配置。</p>
+<h3 id="1-特点">1、特点</h3>
+<pre><code>1.创建独立的Spring应用程序
+2.直接嵌入Tomcat，Jetty或Undertow（无需部署WAR文件）
+3.提供入门级的依赖文件来简化您的构建配置
+4.尽可能的自动配置Spring和第三方库
+5.提供可用于生产的功能，如指标，运行状况检查和外部配置
+6.完全不会生成代码，也不需要XML配置
 </code></pre>
-<pre><code class="language-js">         function validateIdCard(idCard){
-            //15位和18位身份证号码的正则表达式
-            var regIdCard=/^(^[1-9]\d{7}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}$)|(^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])((\d{4})|\d{3}[Xx])$)$/;
-            //如果通过该验证，说明身份证格式正确，但准确性还需计算
-            if(regIdCard.test(idCard)){
-                if(idCard.length==18){
-                    var idCardWi=new Array( 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 ); //将前17位加权因子保存在数组里
-                    var idCardY=new Array( 1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2 ); //这是除以11后，可能产生的11位余数、验证码，也保存成数组
-                    var idCardWiSum=0; //用来保存前17位各自乖以加权因子后的总和
-                    for(var i=0;i&lt;17;i++){
-                        idCardWiSum+=idCard.substring(i,i+1)*idCardWi[i];
-                    }
-                    var idCardMod=idCardWiSum%11;//计算出校验码所在数组的位置
-                    var idCardLast=idCard.substring(17);//得到最后一位身份证号码
-                    //如果等于2，则说明校验码是10，身份证号码最后一位应该是X
-                    if(idCardMod==2){
-                        if(idCardLast==&quot;X&quot;||idCardLast==&quot;x&quot;){
-                            alert(&quot;恭喜通过验证啦！&quot;);
-                        }else{
-                            alert(&quot;身份证号码错误！&quot;);
-                        }
-                    }else{
-                        //用计算出的验证码与最后一位身份证号码匹配，如果一致，说明通过，否则是无效的身份证号码
-                        if(idCardLast==idCardY[idCardMod]){
-                            alert(&quot;恭喜通过验证啦！&quot;);
-                        }else{
-                            alert(&quot;身份证号码错误！&quot;);
-                        }
-                    }
-                }
-            }else{
-                alert(&quot;身份证格式不正确!&quot;);
-            }
-        }
-    ``` 
-![](https://flakkaqi.github.io/post-images/1592639889017.png)
+<h3 id="2快速入门">2.快速入门</h3>
+<p>step1：开始一个新的spring boot项目</p>
+<pre><code>使用https://start.spring.io/ 创建一个新的WEB项目，并添加web依赖。下载压缩包到本地。
+勾选示例：maven project、2.3.1、jar、8、Spring Web
 </code></pre>
+<p>step2：添加你的代码</p>
+<pre><code>
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@SpringBootApplication
+//The @RestController annotation tells Spring that this code describes an endpoint that should be made available over the web.
+@RestController
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+
+    //The @GetMapping(“/hello”) tells Spring to use our hello() method to answer requests that get sent to the http://localhost:8080/hello address.
+    @GetMapping(&quot;/hello&quot;)
+    //the @RequestParam is telling Spring to expect a name value in the request, but if it’s not there, it will use the word “World” by default.
+    public String hello(@RequestParam(value = &quot;name&quot;, defaultValue = &quot;World&quot;) String name) {
+        return String.format(&quot;Hello %s!&quot;, name);
+    }
+}
+  
+</code></pre>
+<p>The @RestController annotation tells Spring that this code describes an endpoint that should be made available over the web. The @GetMapping(“/hello”) tells Spring to use our hello() method to answer requests that get sent to the http://localhost:8080/hello address. Finally, the @RequestParam is telling Spring to expect a name value in the request, but if it’s not there, it will use the word “World” by default.</p>
+<p>step3：启动项目<br>
+打开控制台执行启动命令</p>
+<pre><code>mvnw spring-boot:run
+</code></pre>
+<p>step4：在浏览器调用接口<br>
+项目启动后我们会看到如下信息</p>
+<p><img src="https://flakkaqi.github.io/post-images/1592797368807.png" alt="" loading="lazy"><br>
+端口为 8080<br>
+可以在浏览器端输入地址：http://localhost:8080/hello?name=amy进行接口调用</p>
 
                 </div>
             </article>
@@ -129,20 +129,20 @@
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/spring-boot/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/spring-boot-ru-men-er/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Spring boot 入门【一】</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Spring boot入门【二】</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/springbootmybatisswaager/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/shen-fen-zheng-xiao-yan-gui-ze/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">springboot+mybatis+swaager</div>
+                        <div class="doc-footer-nav-chapter">身份证校验规则</div>
                     </div>
                 </a>
                 
