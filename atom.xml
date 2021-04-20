@@ -2,14 +2,815 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://flakkaqi.github.io</id>
     <title>祁先生的微博客</title>
-    <updated>2020-06-23T09:08:01.354Z</updated>
+    <updated>2021-04-20T06:37:08.216Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://flakkaqi.github.io"/>
     <link rel="self" href="https://flakkaqi.github.io/atom.xml"/>
     <subtitle>You dida dida me , I huala hula you</subtitle>
     <logo>https://flakkaqi.github.io/images/avatar.png</logo>
     <icon>https://flakkaqi.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, 祁先生的微博客</rights>
+    <rights>All rights reserved 2021, 祁先生的微博客</rights>
+    <entry>
+        <title type="html"><![CDATA[maven将本地jar包安装到仓库]]></title>
+        <id>https://flakkaqi.github.io/post/maven-jiang-ben-di-jar-bao-an-zhuang-dao-cang-ku/</id>
+        <link href="https://flakkaqi.github.io/post/maven-jiang-ben-di-jar-bao-an-zhuang-dao-cang-ku/">
+        </link>
+        <updated>2020-11-18T02:16:31.000Z</updated>
+        <content type="html"><![CDATA[<pre><code>mvn install:install-file -Dfile=aspose-words-16.8.0-jdk16.jar -DgroupId=com.aspose -DartifactId=aspose-words -Dversion=16.8.0 -Dpackaging=jar
+</code></pre>
+<p>mvn install:install-file -Dfile=pageoffice4.5.0.10.jar -DgroupId=com.zhuozhengsoft -DartifactId=pageoffice -Dversion=4.5.0.10 -Dpackaging=jar</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[缓存的三大问题]]></title>
+        <id>https://flakkaqi.github.io/post/huan-cun-de-san-da-wen-ti/</id>
+        <link href="https://flakkaqi.github.io/post/huan-cun-de-san-da-wen-ti/">
+        </link>
+        <updated>2020-10-27T06:20:13.000Z</updated>
+        <summary type="html"><![CDATA[<p>本篇文章主要谈谈Redis中很容易出现的三大问题现象：缓存击穿、缓存穿透以及缓存雪崩。不过在介绍这三个问题现象之前，我们首先需要先来了解下Redis中key的过期淘汰机制。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>本篇文章主要谈谈Redis中很容易出现的三大问题现象：缓存击穿、缓存穿透以及缓存雪崩。不过在介绍这三个问题现象之前，我们首先需要先来了解下Redis中key的过期淘汰机制。</p>
+<!-- more -->
+<p>😁众所周知，Redis可以对存储在Redis中的缓存数据设置过期时间，比如我们获取的短信验证码一般十分钟过期，我们这时候就需要在验证码存进Redis时添加一个key的过期时间，但是这里有一个需要格外注意的问题就是：并非key过期时间到了就一定会被Redis给删除。那么Redis是如何做到对过期key进行删除呢？Redis中对于过期key的删除分为两种策略：定期删除和惰性删除。</p>
+<p><em>定期删除</em>：Redis 默认是每隔 100ms 就随机抽取一些设置了过期时间的 Key，检查其是否过期，如果过期就删除。为什么是随机抽取而不是检查所有key？因为你如果设置的key成千上万，每100毫秒都将所有存在的key检查一遍，会给CPU带来比较大的压力。</p>
+<p><em>惰性删除</em> ：定期删除由于是随机抽取可能会导致很多过期 Key 到了过期时间并没有被删除。所以用户在从缓存获取数据的时候，redis会检查这个key是否过期了，如果过期就删除这个key。这时候就会在查询的时候将过期key从缓存中清除。<br>
+😙但是如果仅仅使用定期删除 + 惰性删除机制还是会留下一个严重的隐患：如果定期删除留下了很多已经过期的key，而且用户长时间都没有使用过这些过期key，导致过期key无法被惰性删除，从而导致过期key一直堆积在内存里，最终造成Redis内存块被消耗殆尽。那这个问题如何解决呢？这个时候Redis内存淘汰机制应运而生了。Redis内存淘汰机制提供了6种数据淘汰策略：</p>
+<ul>
+<li>volatile-lru：从已设置过期时间的数据集中挑选最近最少使用的数据淘汰。</li>
+<li>volatile-ttl：从已设置过期时间的数据集中挑选将要过期的数据淘汰。</li>
+<li>volatile-random：从已设置过期时间的数据集中任意选择数据淘汰。</li>
+<li>allkeys-lru：当内存不足以容纳新写入数据时移除最近最少使用的key。</li>
+<li>allkeys-random：从数据集中任意选择数据淘汰。</li>
+<li>no-enviction：当内存不足以容纳新写入数据时，新写入操作会报错</li>
+</ul>
+<p>😠一般情况下，推荐使用volatile-lru策略，对于配置信息等重要数据，不应该设置过期时间，这样Redis就永远不会淘汰这些重要数据。对于一般数据可以添加一个缓存时间，当数据失效则请求会从DB中获取并重新存入Redis中。</p>
+<p>###缓存击穿</p>
+<p>讲完了Redis的key的过期淘汰机制，接下我们可以进入正题：为什么会出现缓存击穿、缓存穿透和缓存雪崩现象呢？首先我们来看下请求是如何取到数据的：当接收到用户请求，首先先尝试从Redis缓存中获取到数据，如果缓存中能取到数据则直接返回结果，当缓存中不存在数据时从DB获取数据，如果数据库成功取到数据，则更新Redis，然后返回数据，如果DB无数据，则返回空结果。那什么情况下会出现三大问题现象呢？我们先来看下缓存击穿的情况：</p>
+<ul>
+<li>定义：高并发的情况下，某个热门key突然过期，导致大量请求在Redis未找到缓存数据，进而全部去访问DB请求数据，引起DB压力瞬间增大。</li>
+<li>解决方案：缓存击穿的情况下一般不容易造成DB的宕机，只是会造成对DB的周期性压力。对缓存击穿的解决方案一般可以这样：Redis中的数据不设置过期时间，然后在缓存的对象上添加一个属性标识过期时间，每次获取到数据时，校验对象中的过期时间属性，如果数据即将过期，则异步发起一个线程主动更新缓存中的数据。但是这种方案可能会导致有些请求会拿到过期的值，就得看业务能否可以接受，如果要求数据必须是新数据，则最好的方案则为热点数据设置为永不过期，然后加一个互斥锁保证缓存的单线程写。</li>
+</ul>
+<p>###缓存穿透</p>
+<ul>
+<li>定义：缓存穿透是指查询缓存和DB中都不存在的数据。比如通过id查询商品信息，id一般大于0，攻击者会故意传id为-1去查询，由于缓存是不命中则从DB中获取数据，这将会导致每次缓存都不命中数据导致每个请求都访问DB，造成缓存穿透。</li>
+<li>解决方案：缓存穿透的解决方案可以分成两个部分：首先在API层增加基本校验：用户鉴权校验，id校验。比如用户鉴权失败或者id &lt; 0的请求直接进行拦截。其次在缓存和DB都取不到数据的时候将将key-value存储成key-null存储到Redis， 过期时间可以存储的短点比如60S，防止短时间内攻击者不断发起请求导致数据库压力过大出现宕机。</li>
+</ul>
+<p>###缓存雪崩</p>
+<ul>
+<li>定义：缓存中如果大量缓存在一段时间内集中过期了，这时候会发生大量的缓存击穿现象，所有的请求都落在了DB上，由于查询数据量巨大，引起DB压力过大甚至导致DB宕机。</li>
+<li>解决方案：缓存雪崩一般没有完美解决的方法，但是我们可以尽量分析用户行为，尽量保证key的失效时间比较平均，防止同一时间出现大量缓存数据同时过期的现象，并且设置热点数据永不过期。同时如果为分布式环境下，使用分布式锁来保证缓存的单线程写，这样可以避免同一时间大量缓存失效导致请求全部落在DB上。而我觉得如果可以接受有些请求拿到过期值，最合理的方案实际上就是使用缓存击穿的方案：Redis中的数据不设置过期时间，然后在缓存的对象上添加一个属性标识过期时间，每次获取到数据时，校验对象中的过期时间属性，如果数据即将过期，则异步发起一个线程主动更新缓存中的数据。</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Springboot解决跨域问题]]></title>
+        <id>https://flakkaqi.github.io/post/springboot-jie-jue-kua-yu-wen-ti/</id>
+        <link href="https://flakkaqi.github.io/post/springboot-jie-jue-kua-yu-wen-ti/">
+        </link>
+        <updated>2020-09-27T01:47:28.000Z</updated>
+        <content type="html"><![CDATA[<!-- more -->
+<p>什么是跨域问题这里我就不说了，直接说我使用addCorsMappings方法配置跨域时遇到的问题。具体代码如下：</p>
+<pre><code class="language-java">public void addCorsMappings(CorsRegistry registry) {
+   
+    registry.addMapping(&quot;/**&quot;)
+            .allowedOrigins(&quot;*&quot;)
+            .allowedMethods(&quot;POST&quot;, &quot;GET&quot;, &quot;PUT&quot;, &quot;OPTIONS&quot;, &quot;DELETE&quot;)
+            .allowCredentials(true)
+            .allowedHeaders(&quot;*&quot;)
+            .maxAge(3600);
+}
+</code></pre>
+<p>但是使用此方法配置之后再使用自定义拦截器时跨域相关配置就会失效。<br>
+原因是请求经过的先后顺序问题，当请求到来时会先进入拦截器中，而不是进入Mapping映射中，所以返回的头信息中并没有配置的跨域信息。浏览器就会报跨域异常。</p>
+<p>正确的解决跨域问题的方法时使用CorsFilter过滤器。代码如下：</p>
+<pre><code class="language-java">private CorsConfiguration corsConfig() {
+    CorsConfiguration corsConfiguration = new CorsConfiguration();
+    * 请求常用的三种配置，*代表允许所有，当时你也可以自定义属性（比如header只能带什么，只能是post方式等等）
+    */
+    corsConfiguration.addAllowedOrigin(&quot;*&quot;);
+    corsConfiguration.addAllowedHeader(&quot;*&quot;);
+    corsConfiguration.addAllowedMethod(&quot;*&quot;);
+    corsConfiguration.setAllowCredentials(true);
+    corsConfiguration.setMaxAge(3600L);
+    return corsConfiguration;
+}
+@Bean
+public CorsFilter corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration(&quot;/**&quot;, corsConfig());
+    return new CorsFilter(source);
+}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Springboot如何配置RedisTemplate]]></title>
+        <id>https://flakkaqi.github.io/post/springboot-ru-he-pei-zhi-redistemplate/</id>
+        <link href="https://flakkaqi.github.io/post/springboot-ru-he-pei-zhi-redistemplate/">
+        </link>
+        <updated>2020-08-13T09:08:29.000Z</updated>
+        <content type="html"><![CDATA[<!-- more -->
+<h2 id="一-引入依赖">一、引入依赖</h2>
+<pre><code class="language-xml">&lt;!--redis--&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+		&lt;/dependency&gt;
+		&lt;!--fastjson--&gt;
+		&lt;dependency&gt;
+			&lt;groupId&gt;com.alibaba&lt;/groupId&gt;
+			&lt;artifactId&gt;fastjson&lt;/artifactId&gt;
+			&lt;version&gt;1.2.47&lt;/version&gt;
+		&lt;/dependency&gt;
+</code></pre>
+<h2 id="二-新建配置类">二、新建配置类</h2>
+<pre><code class="language-java">
+import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+@Configuration
+@ConditionalOnClass(RedisOperations.class)
+@EnableConfigurationProperties(RedisProperties.class)
+public class RedisConfig {
+
+    @Bean
+    @ConditionalOnMissingBean(name = &quot;redisTemplate&quot;)
+    public RedisTemplate&lt;Object, Object&gt; redisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate&lt;Object, Object&gt; template = new RedisTemplate&lt;&gt;();
+        //使用fastjson序列化
+        FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
+        // value值的序列化采用fastJsonRedisSerializer
+        template.setValueSerializer(fastJsonRedisSerializer);
+        template.setHashValueSerializer(fastJsonRedisSerializer);
+        // key的序列化采用StringRedisSerializer
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(StringRedisTemplate.class)
+    public StringRedisTemplate stringRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
+    }
+}
+</code></pre>
+<h2 id="三-添加redis配置文件">三、添加redis配置文件</h2>
+<pre><code class="language-yml">spring:
+  # Redis数据源
+  redis:
+    #database为默认redis创建的0-15个db数据库，这里默认为0，只用填写数字
+    host: localhost
+    port: 6379
+    timeout: 500
+    password: 123456
+    jedis:
+      pool:
+        max-active: 5  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 20      # 连接池中的最大空闲连接
+        min-idle: 1       # 连接池中的最小空闲连接
+</code></pre>
+<h2 id="四-扩展工具类">四、扩展工具类</h2>
+<pre><code class="language-java">package com.css.zjjg.common.utils;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author QiShuai
+ * @date 2020/8/13 13:53
+ * @description redis工具类
+ */
+@Component
+public final class RedisUtil {
+
+    @Resource
+    private RedisTemplate&lt;String, Object&gt; redisTemplate;
+
+    public Set&lt;String&gt; keys(String keys) {
+        try {
+            return redisTemplate.keys(keys);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 指定缓存失效时间
+     *
+     * @param key  键
+     * @param time 时间(秒)
+     * @return
+     */
+    public boolean expire(String key, long time) {
+        try {
+            if (time &gt; 0) {
+                redisTemplate.expire(key, time, TimeUnit.SECONDS);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 根据key 获取过期时间
+     *
+     * @param key 键 不能为null
+     * @return 时间(秒) 返回0代表为永久有效
+     */
+    public long getExpire(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 判断key是否存在
+     *
+     * @param key 键
+     * @return true 存在 false不存在
+     */
+    public boolean hasKey(String key) {
+        try {
+            return redisTemplate.hasKey(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 删除缓存
+     *
+     * @param key 可以传一个值 或多个
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public void del(String... key) {
+        if (key != null &amp;&amp; key.length &gt; 0) {
+            if (key.length == 1) {
+                redisTemplate.delete(key[0]);
+            } else {
+                redisTemplate.delete(CollectionUtils.arrayToList(key));
+            }
+        }
+    }
+
+    /**
+     * 普通缓存获取
+     *
+     * @param key 键
+     * @return 值
+     */
+    public Object get(String key) {
+        return key == null ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 普通缓存放入
+     *
+     * @param key   键
+     * @param value 值
+     * @return true成功 false失败
+     */
+    public boolean set(String key, Object value) {
+        try {
+            redisTemplate.opsForValue().set(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 普通缓存放入并设置时间
+     *
+     * @param key   键
+     * @param value 值
+     * @param time  时间(秒) time要大于0 如果time小于等于0 将设置无限期
+     * @return true成功 false 失败
+     */
+    public boolean set(String key, Object value, long time) {
+        try {
+            if (time &gt; 0) {
+                redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
+            } else {
+                set(key, value);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 递增
+     *
+     * @param key   键
+     * @param delta 要增加几(大于0)
+     * @return
+     */
+    public long incr(String key, long delta) {
+        if (delta &lt; 0) {
+            throw new RuntimeException(&quot;递增因子必须大于0&quot;);
+        }
+        return redisTemplate.opsForValue().increment(key, delta);
+    }
+
+    /**
+     * 递减
+     *
+     * @param key   键
+     * @param delta 要减少几(小于0)
+     * @return
+     */
+    public long decr(String key, long delta) {
+        if (delta &lt; 0) {
+            throw new RuntimeException(&quot;递减因子必须大于0&quot;);
+        }
+        return redisTemplate.opsForValue().increment(key, -delta);
+    }
+
+    /**
+     * HashGet
+     *
+     * @param key  键 不能为null
+     * @param item 项 不能为null
+     * @return 值
+     */
+    public Object hget(String key, String item) {
+        return redisTemplate.opsForHash().get(key, item);
+    }
+
+    /**
+     * 获取hashKey对应的所有键值
+     *
+     * @param key 键
+     * @return 对应的多个键值
+     */
+    public Map&lt;Object, Object&gt; hmget(String key) {
+        return redisTemplate.opsForHash().entries(key);
+    }
+
+    /**
+     * HashSet
+     *
+     * @param key 键
+     * @param map 对应多个键值
+     * @return true 成功 false 失败
+     */
+    public boolean hmset(String key, Map&lt;String, Object&gt; map) {
+        try {
+            redisTemplate.opsForHash().putAll(key, map);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * HashSet 并设置时间
+     *
+     * @param key  键
+     * @param map  对应多个键值
+     * @param time 时间(秒)
+     * @return true成功 false失败
+     */
+    public boolean hmset(String key, Map&lt;String, Object&gt; map, long time) {
+        try {
+            redisTemplate.opsForHash().putAll(key, map);
+            if (time &gt; 0) {
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 向一张hash表中放入数据,如果不存在将创建
+     *
+     * @param key   键
+     * @param item  项
+     * @param value 值
+     * @return true 成功 false失败
+     */
+    public boolean hset(String key, String item, Object value) {
+        try {
+            redisTemplate.opsForHash().put(key, item, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 向一张hash表中放入数据,如果不存在将创建
+     *
+     * @param key   键
+     * @param item  项
+     * @param value 值
+     * @param time  时间(秒) 注意:如果已存在的hash表有时间,这里将会替换原有的时间
+     * @return true 成功 false失败
+     */
+    public boolean hset(String key, String item, Object value, long time) {
+        try {
+            redisTemplate.opsForHash().put(key, item, value);
+            if (time &gt; 0) {
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 删除hash表中的值
+     *
+     * @param key  键 不能为null
+     * @param item 项 可以使多个 不能为null
+     */
+    public void hdel(String key, Object... item) {
+        redisTemplate.opsForHash().delete(key, item);
+    }
+
+    /**
+     * 判断hash表中是否有该项的值
+     *
+     * @param key  键 不能为null
+     * @param item 项 不能为null
+     * @return true 存在 false不存在
+     */
+    public boolean hHasKey(String key, String item) {
+        return redisTemplate.opsForHash().hasKey(key, item);
+    }
+
+    /**
+     * hash递增 如果不存在,就会创建一个 并把新增后的值返回
+     *
+     * @param key  键
+     * @param item 项
+     * @param by   要增加几(大于0)
+     * @return
+     */
+    public double hincr(String key, String item, double by) {
+        return redisTemplate.opsForHash().increment(key, item, by);
+    }
+
+    /**
+     * hash递减
+     *
+     * @param key  键
+     * @param item 项
+     * @param by   要减少记(小于0)
+     * @return
+     */
+    public double hdecr(String key, String item, double by) {
+        return redisTemplate.opsForHash().increment(key, item, -by);
+    }
+
+    /**
+     * 根据key获取Set中的所有值
+     *
+     * @param key 键
+     * @return
+     */
+    public Set&lt;Object&gt; sGet(String key) {
+        try {
+            return redisTemplate.opsForSet().members(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 根据value从一个set中查询,是否存在
+     *
+     * @param key   键
+     * @param value 值
+     * @return true 存在 false不存在
+     */
+    public boolean sHasKey(String key, Object value) {
+        try {
+            return redisTemplate.opsForSet().isMember(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 将数据放入set缓存
+     *
+     * @param key    键
+     * @param values 值 可以是多个
+     * @return 成功个数
+     */
+    public long sSet(String key, Object... values) {
+        try {
+            return redisTemplate.opsForSet().add(key, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 将set数据放入缓存
+     *
+     * @param key    键
+     * @param time   时间(秒)
+     * @param values 值 可以是多个
+     * @return 成功个数
+     */
+    public long sSetAndTime(String key, long time, Object... values) {
+        try {
+            Long count = redisTemplate.opsForSet().add(key, values);
+            if (time &gt; 0) {
+                expire(key, time);
+            }
+            return count;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 获取set缓存的长度
+     *
+     * @param key 键
+     * @return
+     */
+    public long sGetSetSize(String key) {
+        try {
+            return redisTemplate.opsForSet().size(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 移除值为value的
+     *
+     * @param key    键
+     * @param values 值 可以是多个
+     * @return 移除的个数
+     */
+    public long setRemove(String key, Object... values) {
+        try {
+            Long count = redisTemplate.opsForSet().remove(key, values);
+            return count;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    // ===============================list=================================
+
+    /**
+     * 获取list缓存的内容
+     *
+     * @param key   键
+     * @param start 开始
+     * @param end   结束 0 到 -1代表所有值
+     * @return
+     */
+    public List&lt;Object&gt; lGet(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForList().range(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取list缓存的长度
+     *
+     * @param key 键
+     * @return
+     */
+    public long lGetListSize(String key) {
+        try {
+            return redisTemplate.opsForList().size(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 通过索引 获取list中的值
+     *
+     * @param key   键
+     * @param index 索引 index&gt;=0时， 0 表头，1 第二个元素，依次类推；index&lt;0时，-1，表尾，-2倒数第二个元素，依次类推
+     * @return
+     */
+    public Object lGetIndex(String key, long index) {
+        try {
+            return redisTemplate.opsForList().index(key, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 将list放入缓存
+     *
+     * @param key   键
+     * @param value 值
+     * @return
+     */
+    public boolean lSet(String key, Object value) {
+        try {
+            redisTemplate.opsForList().rightPush(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 将list放入缓存
+     *
+     * @param key   键
+     * @param value 值
+     * @param time  时间(秒)
+     * @return
+     */
+    public boolean lSet(String key, Object value, long time) {
+        try {
+            redisTemplate.opsForList().rightPush(key, value);
+            if (time &gt; 0) {
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 将list放入缓存
+     *
+     * @param key   键
+     * @param value 值
+     * @return
+     */
+    public boolean lSet(String key, List&lt;Object&gt; value) {
+        try {
+            redisTemplate.opsForList().rightPushAll(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 将list放入缓存
+     *
+     * @param key   键
+     * @param value 值
+     * @param time  时间(秒)
+     * @return
+     */
+    public boolean lSet(String key, List&lt;Object&gt; value, long time) {
+        try {
+            redisTemplate.opsForList().rightPushAll(key, value);
+            if (time &gt; 0) {
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 根据索引修改list中的某条数据
+     *
+     * @param key   键
+     * @param index 索引
+     * @param value 值
+     * @return
+     */
+    public boolean lUpdateIndex(String key, long index, Object value) {
+        try {
+            redisTemplate.opsForList().set(key, index, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 移除N个值为value
+     *
+     * @param key   键
+     * @param count 移除多少个
+     * @param value 值
+     * @return 移除的个数
+     */
+    public long lRemove(String key, long count, Object value) {
+        try {
+            Long remove = redisTemplate.opsForList().remove(key, count, value);
+            return remove;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 根据key前缀批量删除缓存
+     * @param key
+     * @return
+     */
+    public long batchDel(String key){
+        try {
+            Set&lt;String&gt; keys = redisTemplate.keys(key + &quot;*&quot;);
+            Long delete = redisTemplate.delete(keys);
+            return delete;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+}
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1597310054821.jpg" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[java中堆栈的区别]]></title>
+        <id>https://flakkaqi.github.io/post/java-zhong-dui-zhan-de-qu-bie/</id>
+        <link href="https://flakkaqi.github.io/post/java-zhong-dui-zhan-de-qu-bie/">
+        </link>
+        <updated>2020-06-25T01:59:13.000Z</updated>
+        <summary type="html"><![CDATA[<p>zzzd</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>zzzd</p>
+<!-- more -->
+<h3 id="一-撇开静态存储分配集中比较堆和栈">一、撇开静态存储分配,集中比较堆和栈</h3>
+<p>功能和作用</p>
+<pre><code>堆：主要是用来存放对象的
+        缺点：程序运行时请求操作系统给他分配内存，比如多态，系统分配和销毁内存时占用时间长，效率低。
+        优点：编译器不必知道要从堆里分配多少空间，也不需要知道要在堆里停留多久，
+栈：主要是用来执行程序的
+        优点：保存对象的引用和基本数据类型、局部变量、形式参数等在栈中分配内存，编译时数据区的大小已经确定，运行时分配，大小不变，分配速度快。销毁时只需要移动栈指针即可，速度快。
+</code></pre>
+<h3 id="二-jvm中的堆和栈">二、JVM中的堆和栈</h3>
+<pre><code>    JVM是基于堆栈的虚拟机.JVM为每个新创建的线程都分配一个堆栈;
+ 对于一个Java程序来说，它的运行就是通过对堆栈的操作来完成的。堆栈 以帧为单位保存线程的状态;
+    JVM对堆栈只进行两种操作:以帧为单位的压栈和出栈操作；
+ 从Java的这种分配机制来看:堆栈(Stack)是操作系统在建立某个进程时或者线程(在支持多线程的操作系统中是线程)为这个线程建立的存储区域，该区域具有先进后出的特性；
+ 每一个Java应用都唯一对应一个JVM实例，每一个实例唯一对应一个堆。应用程序在运行中所创建的所有类实例或数组都放在这个堆中,并由应用所有的线程共享；
+    Java中分配堆内存是自动初始化的。Java中所有对象的存储空间都是在堆中分配的，但是这个对象的引用却是在堆栈中分配,也就是说在建立一个对象时从两个地方都分配内存，在堆中分配的内存实际建立这个对象，而在堆栈中分配的内存只是一个指向这个堆对象的指针(引用)而已；
+ Java中所有对象的存储空间都是在堆中分配的，但是这个对象的引用却是在堆栈中分配,也就是说在建立一个对象时从两个地方都分配内存，在堆中分配的内存实际建立这个对象，而在堆栈中分配的内存只是一个指向这个堆对象的指针(引用)而已。
+ 基础数据类型直接在栈空间分配，方法的形式参数，直接在栈空间分配，当方法调用完成后从栈空间回收。引用数据类型，需要用new来创建，既在栈空间 分配一个地址空间，又在堆空间分配对象的类变量 。方法的引用参数，在栈空间分配一个地址空间，并指向堆空间的对象区，当方法调用完成后从栈空间回收。局部变量new出来时，在栈空间和堆空间中分配空 间，当局部变量生命周期结束后，栈空间立刻被回收，堆空间区域等待GC回收。方法调用时传入的literal参数，先在栈空间分配，在方法调用完成后从栈 空间分配。字符串常量在DATA区域分配，this在堆空间分配。数组既在栈空间分配数组名称，又在堆空间分配数组实际的大小！</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Spring boot入门【二】]]></title>
         <id>https://flakkaqi.github.io/post/spring-boot-ru-men-er/</id>
@@ -475,588 +1276,6 @@ public class QuestionnaireTimingJob {
     baseRestUrl：http://xxxx.xxx.cclssksls.cclslls/skss/
 </code></pre>
 <figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591674724449.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[springboot注解读取配置文件的值]]></title>
-        <id>https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/</id>
-        <link href="https://flakkaqi.github.io/post/springboot-zhu-jie-du-qu-pei-zhi-wen-jian-de-zhi/">
-        </link>
-        <updated>2020-06-09T03:08:25.000Z</updated>
-        <summary type="html"><![CDATA[<p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>通常我会将一些会变得信息放到配置文件中方便后期上线或者后期维护时进行修改，在springboot项目中如何方便的读取配置文件中的值，以下将介绍两个注解：</p>
-<!-- more -->
-<p>配置文件：questionnaire.properties</p>
-<pre><code>baseRestUrl=http://xxxxxx.xxx.xxxx.cn/questionnaire/
-</code></pre>
-<p>使用该配置文件的类</p>
-<pre><code>@PropertySource(&quot;classpath:questionnaire.properties&quot;)
-public class QuestionnaireTimingJob {
-        @Value(&quot;${baseRestUrl}&quot;)
-         private String baseUrl;
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591673719380.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[全角、半角对照表]]></title>
-        <id>https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/</id>
-        <link href="https://flakkaqi.github.io/post/quan-jiao-ban-jiao-dui-zhao-biao/">
-        </link>
-        <updated>2020-06-03T08:39:54.000Z</updated>
-        <summary type="html"><![CDATA[<p>🤡用户输入的全角可能在后台处理成半角，很多方法并不适用所有的全角半角转换，所以，最简单粗暴的方法就是遍历.......</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>🤡用户输入的全角可能在后台处理成半角，很多方法并不适用所有的全角半角转换，所以，最简单粗暴的方法就是遍历.......</p>
-<!-- more -->
-<h3 id="全角半角字符对照表">全角半角字符对照表</h3>
-<pre><code>ａ a ｂ b ｃ c ｄ d ｅ e ｆ f ｇ g ｈ h ｉ i ｊ j ｋ k ｌ l ｍ m ｎ n ｏ o ｐ p ｑ q ｒ r ｓ s ｔ t ｕ u ｖ v ｗ w ｘ x ｙ y ｚ z Ａ A Ｂ B Ｃ C Ｄ D Ｅ E Ｆ F Ｇ G Ｈ H Ｉ I Ｊ J Ｋ K Ｌ L Ｍ M Ｎ N Ｏ O Ｐ P Ｑ Q Ｒ R Ｓ S Ｔ T Ｕ U Ｖ V Ｗ W Ｘ X Ｙ Y Ｚ Z １ 1 ２ 2 ３ 3 ４ 4 ５ 5 ６ 6 ７ 7 ８ 8 ９ 9 ０ 0 ｀ ` ” &quot; ’ ' “ &quot; ‘ ' ＿ _ － - ～ ~ ＝ = ＋ + ＼ \ ｜ | ／ / （ ( ） ) ［ [ ］ ] 【 [ 】 ] ｛ { ｝ } ＜ &lt; ＞ &gt; ． . ， , ； ; ： : ！ ! ＾ ^ ％ % ＃ # ＠ @ ＄ $ ＆ &amp; ？ ? ＊ * 。 .
-</code></pre>
-<pre><code class="language-java">public static void main(String[] args) {
-        String arr = &quot;中国，中文，标点符号！你好？１２３４５＠＃【】+=-（）。&quot;;
-        char[] chars = arr.toCharArray();
-        char[][] charTable = {
-               {'ａ', 'ｂ', 'ｃ', 'ｄ', 'ｅ', 'ｆ', 'ｇ', 'ｈ', 'ｉ', 'ｊ', 'ｋ', 'ｌ', 'ｍ', 'ｎ', 'ｏ', 'ｐ', 'ｑ',
-                        'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ', 'Ａ', 'Ｂ', 'Ｃ', 'Ｄ', 'Ｅ', 'Ｆ', 'Ｇ',
-                        'Ｈ', 'Ｉ', 'Ｊ', 'Ｋ', 'Ｌ', 'Ｍ', 'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ',
-                        'Ｘ', 'Ｙ', 'Ｚ', '１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '｀', '”', '’',
-                        '“', '‘', '＿', '－', '～', '＝', '＋', '＼', '｜', '／', '（', '）', '［', '］', '【', '】',
-                        '｛', '｝', '＜', '＞', '．', '，', '；', '：', '！', '＾', '％', '＃', '＠', '＄', '＆', '？',
-                        '＊', '。','　'},
-                {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-                        'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6',
-                        '7', '8', '9', '0', '`', '&quot;', '\'', '&quot;', '\'', '_', '-', '~', '=', '+', '\\', '|', '/',
-                        '(', ')', '[', ']', '[', ']', '{', '}', '&lt;', '&gt;', '.', ',', ';', ':', '!', '^', '%', '#', '@',
-                        '$', '&amp;', '?', '*', '.',' '}
-        };
-        for (int i = 0; i &lt; chars.length; i++) {
-            for (int j = 0; j &lt; charTable[0].length; j++) {
-                if (chars[i] == charTable[0][j]) {
-                    chars[i] = charTable[1][j];
-                }
-            }
-        }
-        System.out.println(String.valueOf(chars));
-    }
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1591178131634.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[mybatisplus代码生成器]]></title>
-        <id>https://flakkaqi.github.io/post/mybatisplus-dai-ma-sheng-cheng-qi/</id>
-        <link href="https://flakkaqi.github.io/post/mybatisplus-dai-ma-sheng-cheng-qi/">
-        </link>
-        <updated>2020-05-29T01:20:53.000Z</updated>
-        <summary type="html"><![CDATA[<p>😇使用myabtisplus代码生成器可以大大提升代码的开发效率</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>😇使用myabtisplus代码生成器可以大大提升代码的开发效率</p>
-<!-- more -->
-<h3 id="引入依赖">引入依赖</h3>
-<pre><code class="language-java">import com.baomidou.mybatisplus.enums.IdType;
-import com.baomidou.mybatisplus.generator.AutoGenerator;
-import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
-import com.baomidou.mybatisplus.generator.config.GlobalConfig;
-import com.baomidou.mybatisplus.generator.config.PackageConfig;
-import com.baomidou.mybatisplus.generator.config.StrategyConfig;
-import com.baomidou.mybatisplus.generator.config.rules.DbType;
-import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
-</code></pre>
-<h3 id="工具类">工具类</h3>
-<pre><code class="language-java">
-public class GeneratorTest {
-
-    public static void main(String[] args) {
-        //1、全局配置
-        GlobalConfig config = new GlobalConfig();
-        config.setActiveRecord(true)//开启AR模式
-                .setAuthor(&quot;qishuai&quot;)//设置作者
-                //生成路径(一般都是生成在此项目的src/main/java下面)
-                .setOutputDir(&quot;C:\\javaProject\\spacework\\src\\main\\java&quot;)
-                .setFileOverride(false)//第二次生成不会把第一次生成的覆盖掉
-                .setIdType(IdType.AUTO)//主键策略
-                .setServiceName(&quot;%sService&quot;)//生成的service接口名字首字母是否为I，这样设置就没有I
-                .setBaseResultMap(true)//生成resultMap
-                .setBaseColumnList(true)//在xml中生成基础列
-                .setOpen(false);//当代码生成完成之后是否打开代码所在的文件夹
-        //2、数据源配置
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDbType(DbType.ORACLE)//数据库类型
-                .setDriverName(&quot;dm.jdbc.driver.DmDriver&quot;)
-                .setUrl(&quot;jdbc:**://**.**.**.**:****:****/***&quot;)
-                .setUsername(&quot;******&quot;)
-                .setPassword(&quot;*******&quot;);
-        //3、策略配置
-        StrategyConfig strategyConfig = new StrategyConfig();
-        strategyConfig.setCapitalMode(true)//开启全局大写命名
-                .setDbColumnUnderline(true)//表名字段名使用下划线
-                .setNaming(NamingStrategy.underline_to_camel)//下划线到驼峰的命名方式
-                .setTablePrefix(&quot;&quot;)//表名前缀
-                .setEntityLombokModel(true)//使用lombok
-                .setInclude(&quot;BASIC_DATA_T&quot;);//逆向工程使用的表
-        //4、包名策略配置
-        PackageConfig packageConfig = new PackageConfig();
-        packageConfig.setParent(&quot;com.test.bapp.demo&quot;)//设置包名的parent
-                .setMapper(&quot;mapper&quot;)
-                .setService(&quot;service&quot;)
-                .setController(&quot;controller&quot;)
-                .setEntity(&quot;entity&quot;)
-                .setXml(&quot;mapper.mapping&quot;);//设置xml文件的目录
-        //5、整合配置
-        AutoGenerator autoGenerator = new AutoGenerator();
-        autoGenerator.setGlobalConfig(config)
-                .setDataSource(dataSourceConfig)
-                .setStrategy(strategyConfig)
-                .setPackageInfo(packageConfig);
-        //6、执行
-        autoGenerator.execute();
-    }
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1590716277577.jpg" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[java导出EXCEL工具类]]></title>
-        <id>https://flakkaqi.github.io/post/java-dao-chu-excel-gong-ju-lei/</id>
-        <link href="https://flakkaqi.github.io/post/java-dao-chu-excel-gong-ju-lei/">
-        </link>
-        <updated>2020-05-27T09:53:07.000Z</updated>
-        <summary type="html"><![CDATA[<p>😄后端将数据生成excel文件，以流的形式返回给前端。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>😄后端将数据生成excel文件，以流的形式返回给前端。</p>
-<!-- more -->
-<p>一、将查询结果集封装为实体集合</p>
-<pre><code class="language-java">import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-/**
- * @Auther: QiShuai
- * @Date: 2020/5/27 14:26
- * @Description: EXCEL数据获取
- */
-@Data
-@EqualsAndHashCode(callSuper = false)
-@ApiModel(&quot;EXCEL数据获取&quot;)
-public class ConsultExcelResp extends BaseRowModel {
-
-    @ExcelProperty(value = &quot;提交人&quot;,index = 0)  //excle对应的列数
-    @ApiModelProperty(&quot;提交人&quot;)
-    private String userName;
-
-    @ExcelProperty(value = &quot;省份&quot;,index = 1) //excle对应的列数
-    @ApiModelProperty(&quot;省份&quot;)
-    private String province;
-}
-</code></pre>
-<p>二、工具类</p>
-<pre><code class="language-java">package cn.gwssi.bapp.common.exportExcel;
-
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.metadata.BaseRowModel;
-import com.alibaba.excel.support.ExcelTypeEnum;
-import org.apache.poi.hssf.usermodel.*;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
-public class ExcelUtil {
-
-    /**
-     * 生成excel
-     * @param sheetName
-     * @param title
-     * @param values
-     * @param wb
-     * @return
-     */
-    public static HSSFWorkbook getHSSFWorkbook(String sheetName, String[] title, String[][] values, HSSFWorkbook wb) {
-
-        // 第一步，创建一个HSSFWorkbook，对应一个Excel文件
-        if (wb == null) {
-            wb = new HSSFWorkbook();
-        }
-
-        // 第二步，在workbook中添加一个sheet,对应Excel文件中的sheet
-        HSSFSheet sheet = wb.createSheet(sheetName);
-
-        // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制
-        HSSFRow row = sheet.createRow(0);
-
-        // 第四步，创建单元格，并设置值表头 设置表头居中
-        HSSFCellStyle style = wb.createCellStyle();
-        /*style.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 创建一个居中格式*/
-
-        // 声明列对象
-        HSSFCell cell = null;
-
-        // 创建标题
-        for (int i = 0; i &lt; title.length; i++) {
-            cell = row.createCell(i);
-            cell.setCellValue(title[i]);
-            cell.setCellStyle(style);
-        }
-
-        // 创建内容
-        for (int i = 0; i &lt; values.length; i++) {
-            row = sheet.createRow(i + 1);
-            for (int j = 0; j &lt; values[i].length; j++) {
-                // 将内容按顺序赋给对应的列对象
-                row.createCell(j).setCellValue(values[i][j]);
-            }
-        }
-        return wb;
-    }
-
-    /**
-     * 发送响应流方法
-     * @param response
-     * @param fileName
-     */
-    public static void setResponseHeader(HttpServletResponse response, String fileName) {
-        try {
-            try {
-                fileName = new String(fileName.getBytes(),&quot;ISO8859-1&quot;);
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            response.setContentType(&quot;application/octet-stream;charset=ISO8859-1&quot;);
-            response.setHeader(&quot;Content-Disposition&quot;, &quot;attachment;filename=&quot;+ fileName);
-            response.addHeader(&quot;Pargam&quot;, &quot;no-cache&quot;);
-            response.addHeader(&quot;Cache-Control&quot;, &quot;no-cache&quot;);
-            response.setCharacterEncoding(&quot;UTF-8&quot;);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    /**
-     *
-     * 功能描述: 写excel内容
-     *
-     * @param:
-     * @return:
-     * @auther: jiaoguojin
-     * @date: 2020/3/28 17:38
-     */
-    public static void writeExcel(String fileName, List&lt;? extends BaseRowModel&gt; resultList,
-                                  HttpServletResponse response, Class dataClass) throws Exception {
-        EasyExcel.write(getOutputStream(fileName,response), dataClass)
-                .excelType(ExcelTypeEnum.XLSX)
-                .sheet(fileName)
-                .doWrite(resultList);
-    }
-    /**
-     *
-     * 功能描述: 写excel内容 动态表头
-     *
-     * @param:
-     * @return:
-     * @auther: ykf
-     * @date: 2020/3/28 17:38
-     */
-    public static void writeExcel(String fileName, List resultList,
-                                              HttpServletResponse response, Class dataClass, File templateFile) throws Exception {
-        EasyExcel.write(getOutputStream(fileName,response))
-                .head(dataClass)
-                .withTemplate(templateFile)
-                .sheet(0)
-                .doWrite(resultList);
-
-//        // 这里 需要指定写用哪个class去写
-//        ExcelWriter excelWriter = EasyExcel.write(getOutputStream(fileName,response),dataClass).withTemplate(templateFile).build();
-//
-//        // 把sheet设置为不需要头 不然会输出sheet的头 这样看起来第一个table 就有2个头了
-//        WriteSheet writeSheet = EasyExcel.writerSheet(0).needHead(Boolean.FALSE).build();
-//
-//        // 这里必须指定需要头，table 会继承sheet的配置，sheet配置了不需要，table 默认也是不需要
-//        WriteTable writeTable0 = EasyExcel.writerTable(0).needHead(Boolean.FALSE).build();
-//        WriteTable writeTable1 = EasyExcel.writerTable(1).needHead(Boolean.TRUE).build();
-//        writeTable0.setHead(head());
-//        writeTable0.setRelativeHeadRowIndex(-2);
-//        writeTable1.setRelativeHeadRowIndex(0);
-//        // 第一次写入会创建头
-//        List&lt;test&gt; list = new ArrayList();
-//        list.add(new test(&quot;23423423423&quot;,&quot;aseraerawerf&quot;));
-//        list.add(new test(&quot;234238888888888&quot;,&quot;aseraerdddddddddddddddd&quot; +
-//                &quot;+awerf&quot;));
-//        excelWriter.write(list, writeSheet, writeTable0);
-//        // 第二次写如也会创建头，然后在第一次的后面写入数据
-//        excelWriter.write(resultList, writeSheet, writeTable1);
-//        // 千万别忘记finish 会帮忙关闭流
-//        excelWriter.finish();
-    }
-    /**
-     *
-     * 功能描述: 导出文件时为Writer生成OutputStream
-     *
-     * @param:
-     * @return:
-     * @auther: jiaoguojin
-     * @date: 2020/3/27 18:53
-     */
-    private static OutputStream getOutputStream(String fileName,
-                                                HttpServletResponse response) throws Exception {
-        try {
-            fileName = URLEncoder.encode(fileName, &quot;UTF-8&quot;);
-            response.setContentType(&quot;application/vnd.ms-excel&quot;);
-            response.setCharacterEncoding(&quot;utf8&quot;);
-            response.setHeader(&quot;Content-Disposition&quot;, &quot;attachment; filename=&quot; + fileName + &quot;.xlsx&quot;);
-            response.setHeader(&quot;Pragma&quot;, &quot;public&quot;);
-            response.setHeader(&quot;Cache-Control&quot;, &quot;no-store&quot;);
-            response.addHeader(&quot;Cache-Control&quot;, &quot;max-age=0&quot;);
-            return response.getOutputStream();
-        } catch (IOException e) {
-            throw new Exception(&quot;导出excel表格失败!&quot;, e);
-        }
-    }
-
-
-    private static List&lt;List&lt;String&gt;&gt; head() {
-        List&lt;List&lt;String&gt;&gt; list = new ArrayList&lt;List&lt;String&gt;&gt;();
-        List&lt;String&gt; head0 = new ArrayList&lt;String&gt;();
-        head0.add(&quot;字符串&quot; + System.currentTimeMillis());
-        List&lt;String&gt; head1 = new ArrayList&lt;String&gt;();
-        head1.add(&quot;数字&quot; + System.currentTimeMillis());
-        List&lt;String&gt; head2 = new ArrayList&lt;String&gt;();
-        head2.add(&quot;日期&quot; + System.currentTimeMillis());
-        list.add(head0);
-        list.add(head1);
-        list.add(head2);
-        return list;
-    }
-}
-</code></pre>
-<p>三、使用示例</p>
-<pre><code class="language-java">public void consultListToExcel(HttpServletResponse response) throws Exception {
-  List&lt;ConsultExcelResp&gt; list = xxwConsultTMapper.getConsultListToExcel();
-  String filename = &quot;网上咨询回复表&quot;;
-  ExcelUtil.writeExcel(filename, list, response, ConsultExcelResp.class);
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1590573767663.webp" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Java http请求工具类]]></title>
-        <id>https://flakkaqi.github.io/post/java-http-qing-qiu-gong-ju-lei/</id>
-        <link href="https://flakkaqi.github.io/post/java-http-qing-qiu-gong-ju-lei/">
-        </link>
-        <updated>2020-05-12T12:21:48.000Z</updated>
-        <summary type="html"><![CDATA[<p>😚个人觉得时非常简单实用。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>😚个人觉得时非常简单实用。</p>
-<!-- more -->
-<pre><code class="language-java">package cn.gwssi.bapp.common.util;
-
-import com.alibaba.fastjson.JSONObject;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-
-/**
- * HttpClient工具类
- */
-public class HttpClientUtils {
-    private static Logger logger = LoggerFactory.getLogger(HttpClientUtils.class); // 日志记录
-
-    private static RequestConfig requestConfig = null;
-
-    static {
-        // 设置请求和传输超时时间
-        requestConfig = RequestConfig.custom().setSocketTimeout(60000).setConnectTimeout(60000).build();
-    }
-
-    /**
-     * post请求传输json参数
-     *
-     * @param url       url地址
-     * @param jsonParam 参数
-     * @return
-     */
-    public static JSONObject httpPost(String url, JSONObject jsonParam) {
-        // post请求返回结果
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        JSONObject jsonResult = null;
-        HttpPost httpPost = new HttpPost(url);
-        // 设置请求和传输超时时间
-        httpPost.setConfig(requestConfig);
-        try {
-            if (null != jsonParam) {
-                // 解决中文乱码问题
-                StringEntity entity = new StringEntity(jsonParam.toString(), &quot;utf-8&quot;);
-                entity.setContentEncoding(&quot;UTF-8&quot;);
-                entity.setContentType(&quot;application/json&quot;);
-                httpPost.setEntity(entity);
-            }
-            CloseableHttpResponse result = httpClient.execute(httpPost);
-            // 请求发送成功，并得到响应
-            if (result.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                String str = &quot;&quot;;
-                try {
-                    // 读取服务器返回过来的json字符串数据
-                    str = EntityUtils.toString(result.getEntity(), &quot;utf-8&quot;);
-                    // 把json字符串转换成json对象
-                    jsonResult = JSONObject.parseObject(str);
-                } catch (Exception e) {
-                    logger.error(&quot;post请求提交失败:&quot; + url, e);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(&quot;post请求提交失败:&quot; + url, e);
-        } finally {
-            httpPost.releaseConnection();
-        }
-        return jsonResult;
-    }
-
-    /**
-     * post请求传输String参数 例如：name=Jack&amp;sex=1&amp;type=2
-     * Content-type:application/x-www-form-urlencoded
-     *
-     * @param url      url地址
-     * @param strParam 参数
-     * @return
-     */
-    public static JSONObject httpPost(String url, String strParam) {
-        // post请求返回结果
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        JSONObject jsonResult = null;
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setConfig(requestConfig);
-        try {
-            if (null != strParam) {
-                // 解决中文乱码问题
-                StringEntity entity = new StringEntity(strParam, &quot;utf-8&quot;);
-                entity.setContentEncoding(&quot;UTF-8&quot;);
-                entity.setContentType(&quot;application/x-www-form-urlencoded&quot;);
-                httpPost.setEntity(entity);
-            }
-            CloseableHttpResponse result = httpClient.execute(httpPost);
-            // 请求发送成功，并得到响应
-            if (result.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                String str = &quot;&quot;;
-                try {
-                    // 读取服务器返回过来的json字符串数据
-                    str = EntityUtils.toString(result.getEntity(), &quot;utf-8&quot;);
-                    // 把json字符串转换成json对象
-                    jsonResult = JSONObject.parseObject(str);
-                } catch (Exception e) {
-                    logger.error(&quot;post请求提交失败:&quot; + url, e);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(&quot;post请求提交失败:&quot; + url, e);
-        } finally {
-            httpPost.releaseConnection();
-        }
-        return jsonResult;
-    }
-
-    /**
-     * 发送get请求
-     *
-     * @param url 路径
-     * @return
-     */
-    public static JSONObject httpGet(String url) {
-        // get请求返回结果
-        JSONObject jsonResult = null;
-        CloseableHttpClient client = HttpClients.createDefault();
-        // 发送get请求
-        HttpGet request = new HttpGet(url);
-        request.setConfig(requestConfig);
-        try {
-            CloseableHttpResponse response = client.execute(request);
-
-            // 请求发送成功，并得到响应
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                // 读取服务器返回过来的json字符串数据
-                HttpEntity entity = response.getEntity();
-                String strResult = EntityUtils.toString(entity, &quot;utf-8&quot;);
-                // 把json字符串转换成json对象
-                jsonResult = JSONObject.parseObject(strResult);
-            } else {
-                logger.error(&quot;get请求提交失败:&quot; + url);
-            }
-        } catch (IOException e) {
-            logger.error(&quot;get请求提交失败:&quot; + url, e);
-        } finally {
-            request.releaseConnection();
-        }
-        return jsonResult;
-    }
-
-    /**
-     * post请求传输String参数 例如：name=Jack&amp;sex=1&amp;type=2
-     * Content-type:application/x-www-form-urlencoded
-     *
-     * @param url      url地址
-     * @param strParam 参数
-     * @return String
-     */
-    public static String httpPostStr(String url, String strParam) {
-        String str = &quot;&quot;;
-        // post请求返回结果
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        JSONObject jsonResult = null;
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setConfig(requestConfig);
-        try {
-            if (null != strParam) {
-                // 解决中文乱码问题
-                StringEntity entity = new StringEntity(strParam, &quot;utf-8&quot;);
-                entity.setContentEncoding(&quot;UTF-8&quot;);
-                entity.setContentType(&quot;application/x-www-form-urlencoded&quot;);
-                httpPost.setEntity(entity);
-            }
-            CloseableHttpResponse result = httpClient.execute(httpPost);
-            // 请求发送成功，并得到响应
-            if (result.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-
-                try {
-                    // 读取服务器返回过来的json字符串数据
-                    str = EntityUtils.toString(result.getEntity(), &quot;utf-8&quot;);
-                    // 把json字符串转换成json对象
-                    /*jsonResult = JSONObject.parseObject(str);*/
-                } catch (Exception e) {
-                    logger.error(&quot;post请求提交失败:&quot; + url, e);
-                }
-            }
-        } catch (IOException e) {
-            logger.error(&quot;post请求提交失败:&quot; + url, e);
-        } finally {
-            httpPost.releaseConnection();
-        }
-        return str;
-    }
-
-}
-</code></pre>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589286418244.webp" alt="" loading="lazy"></figure>
 ]]></content>
     </entry>
 </feed>

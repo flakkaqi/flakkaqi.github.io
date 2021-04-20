@@ -62,47 +62,42 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">友情链接</h1>
-                    <p class="entry-census">发布于 2020-04-18</p>
+                    <h1 class="entry-title">缓存的三大问题</h1>
+                    <p class="entry-census">发布于 2020-10-27</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p><a href="https://greasyfork.org/zh-CN/#home-step-1">脚本管理器安装</a><br>
-<a href="http://www.win4000.com/">高清壁纸下载</a><br>
-<a href="https://chrome.zzzmh.cn/">极简插件网址</a><br>
-<a href="https://chrome.zzzmh.cn/help?token=setup">插件安装说明</a></p>
-<h3 id="图片处理相关">图片处理相关</h3>
-<p><a href="https://sspai.com/post/44668">8种图片放大处理方法</a><br>
-好用的有：Bigjpg、waifu、Vector Magic、<br>
-<a href="http://waifu2x.udp.jp/">waifu2x</a><br>
-<a href="https://www.bearjpg.com/zh/png-to-jpg">小熊图片格式转换工具</a></p>
-<h3 id="前端学习">前端学习</h3>
-<p><a href="https://developer.mozilla.org/zh-CN/">MDN</a><br>
-<a href="http://www.planetb.ca/syntax-highlight-word">代码渲染</a><br>
-<a href="https://www.cool-admin.com">Vue管理后台框架1</a><br>
-<a href="https://gitee.com/TZtudouni/vue-admin">Vue管理后台框架2</a><br>
-<a href="https://d2.pub/zh/">Vue管理后台框架3</a><br>
-<a href="https://github.com/lin-xin/vue-manage-system">Vue管理后台框架4</a></p>
-<h3 id="后端学习">后端学习</h3>
-<p><a href="http://nutzbook.wendal.net">Nutz</a><br>
-<a href="http://c.biancheng.net/cpp/">电子文档</a><br>
-<a href="https://learngitbranching.js.org/">GIT练习</a></p>
-<h3 id="网络安全">网络安全</h3>
-<p>CTF在线练习平台<br>
-<a href="http://ctf.idf.cn/">IDF实验室</a><br>
-<a href="http://oj.xctf.org.cn/problem_archives">XCTF_OJ竞赛平台</a><br>
-<a href="http://hackinglab.cn/">网络信息安全攻防学习平台</a><br>
-<a href="http://www.owasp.org.cn/owasp-project/security-lab">OWASP在线网络安全攻防实验室</a><br>
-<a href="ttp://www.shiyanbar.com/">实验吧</a><br>
-<a href="http://www.ciscn.cn/">全国大学生信息安全竞赛官方网站</a><br>
-<a href="https://www.ms08067.com/about/bachang.html">MS09067WEB靶场</a><br>
-<a href="http://www.hetianlab.com/CTFrace.html">合天网安实验室</a><br>
-<a href="https://adworld.xctf.org.cn/">攻防世界</a><br>
-<a href="https://hack.zkaq.org/?a=battle">封神台</a><br>
-<a href="http://www.sqlfiddle.com/#!9/9eecb">SQL Fiddle在线练习</a><br>
-<a href="http://redtiger.labs.overthewire.org/">SQL注入练习</a><br>
-<a href="http://www.baimaoxueyuan.com/ctf">白帽学院</a></p>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589004052469.webp" alt="" loading="lazy"></figure>
+                    <p>本篇文章主要谈谈Redis中很容易出现的三大问题现象：缓存击穿、缓存穿透以及缓存雪崩。不过在介绍这三个问题现象之前，我们首先需要先来了解下Redis中key的过期淘汰机制。</p>
+<!-- more -->
+<p>😁众所周知，Redis可以对存储在Redis中的缓存数据设置过期时间，比如我们获取的短信验证码一般十分钟过期，我们这时候就需要在验证码存进Redis时添加一个key的过期时间，但是这里有一个需要格外注意的问题就是：并非key过期时间到了就一定会被Redis给删除。那么Redis是如何做到对过期key进行删除呢？Redis中对于过期key的删除分为两种策略：定期删除和惰性删除。</p>
+<p><em>定期删除</em>：Redis 默认是每隔 100ms 就随机抽取一些设置了过期时间的 Key，检查其是否过期，如果过期就删除。为什么是随机抽取而不是检查所有key？因为你如果设置的key成千上万，每100毫秒都将所有存在的key检查一遍，会给CPU带来比较大的压力。</p>
+<p><em>惰性删除</em> ：定期删除由于是随机抽取可能会导致很多过期 Key 到了过期时间并没有被删除。所以用户在从缓存获取数据的时候，redis会检查这个key是否过期了，如果过期就删除这个key。这时候就会在查询的时候将过期key从缓存中清除。<br>
+😙但是如果仅仅使用定期删除 + 惰性删除机制还是会留下一个严重的隐患：如果定期删除留下了很多已经过期的key，而且用户长时间都没有使用过这些过期key，导致过期key无法被惰性删除，从而导致过期key一直堆积在内存里，最终造成Redis内存块被消耗殆尽。那这个问题如何解决呢？这个时候Redis内存淘汰机制应运而生了。Redis内存淘汰机制提供了6种数据淘汰策略：</p>
+<ul>
+<li>volatile-lru：从已设置过期时间的数据集中挑选最近最少使用的数据淘汰。</li>
+<li>volatile-ttl：从已设置过期时间的数据集中挑选将要过期的数据淘汰。</li>
+<li>volatile-random：从已设置过期时间的数据集中任意选择数据淘汰。</li>
+<li>allkeys-lru：当内存不足以容纳新写入数据时移除最近最少使用的key。</li>
+<li>allkeys-random：从数据集中任意选择数据淘汰。</li>
+<li>no-enviction：当内存不足以容纳新写入数据时，新写入操作会报错</li>
+</ul>
+<p>😠一般情况下，推荐使用volatile-lru策略，对于配置信息等重要数据，不应该设置过期时间，这样Redis就永远不会淘汰这些重要数据。对于一般数据可以添加一个缓存时间，当数据失效则请求会从DB中获取并重新存入Redis中。</p>
+<p>###缓存击穿</p>
+<p>讲完了Redis的key的过期淘汰机制，接下我们可以进入正题：为什么会出现缓存击穿、缓存穿透和缓存雪崩现象呢？首先我们来看下请求是如何取到数据的：当接收到用户请求，首先先尝试从Redis缓存中获取到数据，如果缓存中能取到数据则直接返回结果，当缓存中不存在数据时从DB获取数据，如果数据库成功取到数据，则更新Redis，然后返回数据，如果DB无数据，则返回空结果。那什么情况下会出现三大问题现象呢？我们先来看下缓存击穿的情况：</p>
+<ul>
+<li>定义：高并发的情况下，某个热门key突然过期，导致大量请求在Redis未找到缓存数据，进而全部去访问DB请求数据，引起DB压力瞬间增大。</li>
+<li>解决方案：缓存击穿的情况下一般不容易造成DB的宕机，只是会造成对DB的周期性压力。对缓存击穿的解决方案一般可以这样：Redis中的数据不设置过期时间，然后在缓存的对象上添加一个属性标识过期时间，每次获取到数据时，校验对象中的过期时间属性，如果数据即将过期，则异步发起一个线程主动更新缓存中的数据。但是这种方案可能会导致有些请求会拿到过期的值，就得看业务能否可以接受，如果要求数据必须是新数据，则最好的方案则为热点数据设置为永不过期，然后加一个互斥锁保证缓存的单线程写。</li>
+</ul>
+<p>###缓存穿透</p>
+<ul>
+<li>定义：缓存穿透是指查询缓存和DB中都不存在的数据。比如通过id查询商品信息，id一般大于0，攻击者会故意传id为-1去查询，由于缓存是不命中则从DB中获取数据，这将会导致每次缓存都不命中数据导致每个请求都访问DB，造成缓存穿透。</li>
+<li>解决方案：缓存穿透的解决方案可以分成两个部分：首先在API层增加基本校验：用户鉴权校验，id校验。比如用户鉴权失败或者id &lt; 0的请求直接进行拦截。其次在缓存和DB都取不到数据的时候将将key-value存储成key-null存储到Redis， 过期时间可以存储的短点比如60S，防止短时间内攻击者不断发起请求导致数据库压力过大出现宕机。</li>
+</ul>
+<p>###缓存雪崩</p>
+<ul>
+<li>定义：缓存中如果大量缓存在一段时间内集中过期了，这时候会发生大量的缓存击穿现象，所有的请求都落在了DB上，由于查询数据量巨大，引起DB压力过大甚至导致DB宕机。</li>
+<li>解决方案：缓存雪崩一般没有完美解决的方法，但是我们可以尽量分析用户行为，尽量保证key的失效时间比较平均，防止同一时间出现大量缓存数据同时过期的现象，并且设置热点数据永不过期。同时如果为分布式环境下，使用分布式锁来保证缓存的单线程写，这样可以避免同一时间大量缓存失效导致请求全部落在DB上。而我觉得如果可以接受有些请求拿到过期值，最合理的方案实际上就是使用缓存击穿的方案：Redis中的数据不设置过期时间，然后在缓存的对象上添加一个属性标识过期时间，每次获取到数据时，校验对象中的过期时间属性，如果数据即将过期，则异步发起一个线程主动更新缓存中的数据。</li>
+</ul>
 
                 </div>
             </article>
@@ -112,20 +107,20 @@
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/maven-jiang-ben-di-jar-bao-an-zhuang-dao-cang-ku/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Java 实现文件和base64字符串互转</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">maven将本地jar包安装到仓库</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/you-qu-de-bo-ke-wang-zhan-~/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/springboot-jie-jue-kua-yu-wen-ti/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">有趣的博客网站~</div>
+                        <div class="doc-footer-nav-chapter">Springboot解决跨域问题</div>
                     </div>
                 </a>
                 

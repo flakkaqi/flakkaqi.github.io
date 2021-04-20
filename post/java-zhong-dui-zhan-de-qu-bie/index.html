@@ -62,47 +62,30 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">友情链接</h1>
-                    <p class="entry-census">发布于 2020-04-18</p>
+                    <h1 class="entry-title">java中堆栈的区别</h1>
+                    <p class="entry-census">发布于 2020-06-25</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p><a href="https://greasyfork.org/zh-CN/#home-step-1">脚本管理器安装</a><br>
-<a href="http://www.win4000.com/">高清壁纸下载</a><br>
-<a href="https://chrome.zzzmh.cn/">极简插件网址</a><br>
-<a href="https://chrome.zzzmh.cn/help?token=setup">插件安装说明</a></p>
-<h3 id="图片处理相关">图片处理相关</h3>
-<p><a href="https://sspai.com/post/44668">8种图片放大处理方法</a><br>
-好用的有：Bigjpg、waifu、Vector Magic、<br>
-<a href="http://waifu2x.udp.jp/">waifu2x</a><br>
-<a href="https://www.bearjpg.com/zh/png-to-jpg">小熊图片格式转换工具</a></p>
-<h3 id="前端学习">前端学习</h3>
-<p><a href="https://developer.mozilla.org/zh-CN/">MDN</a><br>
-<a href="http://www.planetb.ca/syntax-highlight-word">代码渲染</a><br>
-<a href="https://www.cool-admin.com">Vue管理后台框架1</a><br>
-<a href="https://gitee.com/TZtudouni/vue-admin">Vue管理后台框架2</a><br>
-<a href="https://d2.pub/zh/">Vue管理后台框架3</a><br>
-<a href="https://github.com/lin-xin/vue-manage-system">Vue管理后台框架4</a></p>
-<h3 id="后端学习">后端学习</h3>
-<p><a href="http://nutzbook.wendal.net">Nutz</a><br>
-<a href="http://c.biancheng.net/cpp/">电子文档</a><br>
-<a href="https://learngitbranching.js.org/">GIT练习</a></p>
-<h3 id="网络安全">网络安全</h3>
-<p>CTF在线练习平台<br>
-<a href="http://ctf.idf.cn/">IDF实验室</a><br>
-<a href="http://oj.xctf.org.cn/problem_archives">XCTF_OJ竞赛平台</a><br>
-<a href="http://hackinglab.cn/">网络信息安全攻防学习平台</a><br>
-<a href="http://www.owasp.org.cn/owasp-project/security-lab">OWASP在线网络安全攻防实验室</a><br>
-<a href="ttp://www.shiyanbar.com/">实验吧</a><br>
-<a href="http://www.ciscn.cn/">全国大学生信息安全竞赛官方网站</a><br>
-<a href="https://www.ms08067.com/about/bachang.html">MS09067WEB靶场</a><br>
-<a href="http://www.hetianlab.com/CTFrace.html">合天网安实验室</a><br>
-<a href="https://adworld.xctf.org.cn/">攻防世界</a><br>
-<a href="https://hack.zkaq.org/?a=battle">封神台</a><br>
-<a href="http://www.sqlfiddle.com/#!9/9eecb">SQL Fiddle在线练习</a><br>
-<a href="http://redtiger.labs.overthewire.org/">SQL注入练习</a><br>
-<a href="http://www.baimaoxueyuan.com/ctf">白帽学院</a></p>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589004052469.webp" alt="" loading="lazy"></figure>
+                    <p>zzzd</p>
+<!-- more -->
+<h3 id="一-撇开静态存储分配集中比较堆和栈">一、撇开静态存储分配,集中比较堆和栈</h3>
+<p>功能和作用</p>
+<pre><code>堆：主要是用来存放对象的
+        缺点：程序运行时请求操作系统给他分配内存，比如多态，系统分配和销毁内存时占用时间长，效率低。
+        优点：编译器不必知道要从堆里分配多少空间，也不需要知道要在堆里停留多久，
+栈：主要是用来执行程序的
+        优点：保存对象的引用和基本数据类型、局部变量、形式参数等在栈中分配内存，编译时数据区的大小已经确定，运行时分配，大小不变，分配速度快。销毁时只需要移动栈指针即可，速度快。
+</code></pre>
+<h3 id="二-jvm中的堆和栈">二、JVM中的堆和栈</h3>
+<pre><code>    JVM是基于堆栈的虚拟机.JVM为每个新创建的线程都分配一个堆栈;
+ 对于一个Java程序来说，它的运行就是通过对堆栈的操作来完成的。堆栈 以帧为单位保存线程的状态;
+    JVM对堆栈只进行两种操作:以帧为单位的压栈和出栈操作；
+ 从Java的这种分配机制来看:堆栈(Stack)是操作系统在建立某个进程时或者线程(在支持多线程的操作系统中是线程)为这个线程建立的存储区域，该区域具有先进后出的特性；
+ 每一个Java应用都唯一对应一个JVM实例，每一个实例唯一对应一个堆。应用程序在运行中所创建的所有类实例或数组都放在这个堆中,并由应用所有的线程共享；
+    Java中分配堆内存是自动初始化的。Java中所有对象的存储空间都是在堆中分配的，但是这个对象的引用却是在堆栈中分配,也就是说在建立一个对象时从两个地方都分配内存，在堆中分配的内存实际建立这个对象，而在堆栈中分配的内存只是一个指向这个堆对象的指针(引用)而已；
+ Java中所有对象的存储空间都是在堆中分配的，但是这个对象的引用却是在堆栈中分配,也就是说在建立一个对象时从两个地方都分配内存，在堆中分配的内存实际建立这个对象，而在堆栈中分配的内存只是一个指向这个堆对象的指针(引用)而已。
+ 基础数据类型直接在栈空间分配，方法的形式参数，直接在栈空间分配，当方法调用完成后从栈空间回收。引用数据类型，需要用new来创建，既在栈空间 分配一个地址空间，又在堆空间分配对象的类变量 。方法的引用参数，在栈空间分配一个地址空间，并指向堆空间的对象区，当方法调用完成后从栈空间回收。局部变量new出来时，在栈空间和堆空间中分配空 间，当局部变量生命周期结束后，栈空间立刻被回收，堆空间区域等待GC回收。方法调用时传入的literal参数，先在栈空间分配，在方法调用完成后从栈 空间分配。字符串常量在DATA区域分配，this在堆空间分配。数组既在栈空间分配数组名称，又在堆空间分配数组实际的大小！</code></pre>
 
                 </div>
             </article>
@@ -112,20 +95,20 @@
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/springboot-ru-he-pei-zhi-redistemplate/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Java 实现文件和base64字符串互转</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Springboot如何配置RedisTemplate</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/you-qu-de-bo-ke-wang-zhan-~/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/spring-boot-ru-men-er/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">有趣的博客网站~</div>
+                        <div class="doc-footer-nav-chapter">Spring boot入门【二】</div>
                     </div>
                 </a>
                 

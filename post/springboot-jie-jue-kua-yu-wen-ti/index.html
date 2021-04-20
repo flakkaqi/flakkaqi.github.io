@@ -62,47 +62,44 @@
         <main id="main" class="site-main" role="main">
             <article id="post-1270" class="post-1270 post type-post status-publish format-standard hentry category-90 category-129 tag-149">
                 <header class="entry-header">
-                    <h1 class="entry-title">友情链接</h1>
-                    <p class="entry-census">发布于 2020-04-18</p>
+                    <h1 class="entry-title">Springboot解决跨域问题</h1>
+                    <p class="entry-census">发布于 2020-09-27</p>
                     <hr>
                 </header>
                 <div class="neko">
-                    <p><a href="https://greasyfork.org/zh-CN/#home-step-1">脚本管理器安装</a><br>
-<a href="http://www.win4000.com/">高清壁纸下载</a><br>
-<a href="https://chrome.zzzmh.cn/">极简插件网址</a><br>
-<a href="https://chrome.zzzmh.cn/help?token=setup">插件安装说明</a></p>
-<h3 id="图片处理相关">图片处理相关</h3>
-<p><a href="https://sspai.com/post/44668">8种图片放大处理方法</a><br>
-好用的有：Bigjpg、waifu、Vector Magic、<br>
-<a href="http://waifu2x.udp.jp/">waifu2x</a><br>
-<a href="https://www.bearjpg.com/zh/png-to-jpg">小熊图片格式转换工具</a></p>
-<h3 id="前端学习">前端学习</h3>
-<p><a href="https://developer.mozilla.org/zh-CN/">MDN</a><br>
-<a href="http://www.planetb.ca/syntax-highlight-word">代码渲染</a><br>
-<a href="https://www.cool-admin.com">Vue管理后台框架1</a><br>
-<a href="https://gitee.com/TZtudouni/vue-admin">Vue管理后台框架2</a><br>
-<a href="https://d2.pub/zh/">Vue管理后台框架3</a><br>
-<a href="https://github.com/lin-xin/vue-manage-system">Vue管理后台框架4</a></p>
-<h3 id="后端学习">后端学习</h3>
-<p><a href="http://nutzbook.wendal.net">Nutz</a><br>
-<a href="http://c.biancheng.net/cpp/">电子文档</a><br>
-<a href="https://learngitbranching.js.org/">GIT练习</a></p>
-<h3 id="网络安全">网络安全</h3>
-<p>CTF在线练习平台<br>
-<a href="http://ctf.idf.cn/">IDF实验室</a><br>
-<a href="http://oj.xctf.org.cn/problem_archives">XCTF_OJ竞赛平台</a><br>
-<a href="http://hackinglab.cn/">网络信息安全攻防学习平台</a><br>
-<a href="http://www.owasp.org.cn/owasp-project/security-lab">OWASP在线网络安全攻防实验室</a><br>
-<a href="ttp://www.shiyanbar.com/">实验吧</a><br>
-<a href="http://www.ciscn.cn/">全国大学生信息安全竞赛官方网站</a><br>
-<a href="https://www.ms08067.com/about/bachang.html">MS09067WEB靶场</a><br>
-<a href="http://www.hetianlab.com/CTFrace.html">合天网安实验室</a><br>
-<a href="https://adworld.xctf.org.cn/">攻防世界</a><br>
-<a href="https://hack.zkaq.org/?a=battle">封神台</a><br>
-<a href="http://www.sqlfiddle.com/#!9/9eecb">SQL Fiddle在线练习</a><br>
-<a href="http://redtiger.labs.overthewire.org/">SQL注入练习</a><br>
-<a href="http://www.baimaoxueyuan.com/ctf">白帽学院</a></p>
-<figure data-type="image" tabindex="1"><img src="https://flakkaqi.github.io/post-images/1589004052469.webp" alt="" loading="lazy"></figure>
+                    <!-- more -->
+<p>什么是跨域问题这里我就不说了，直接说我使用addCorsMappings方法配置跨域时遇到的问题。具体代码如下：</p>
+<pre><code class="language-java">public void addCorsMappings(CorsRegistry registry) {
+   
+    registry.addMapping(&quot;/**&quot;)
+            .allowedOrigins(&quot;*&quot;)
+            .allowedMethods(&quot;POST&quot;, &quot;GET&quot;, &quot;PUT&quot;, &quot;OPTIONS&quot;, &quot;DELETE&quot;)
+            .allowCredentials(true)
+            .allowedHeaders(&quot;*&quot;)
+            .maxAge(3600);
+}
+</code></pre>
+<p>但是使用此方法配置之后再使用自定义拦截器时跨域相关配置就会失效。<br>
+原因是请求经过的先后顺序问题，当请求到来时会先进入拦截器中，而不是进入Mapping映射中，所以返回的头信息中并没有配置的跨域信息。浏览器就会报跨域异常。</p>
+<p>正确的解决跨域问题的方法时使用CorsFilter过滤器。代码如下：</p>
+<pre><code class="language-java">private CorsConfiguration corsConfig() {
+    CorsConfiguration corsConfiguration = new CorsConfiguration();
+    * 请求常用的三种配置，*代表允许所有，当时你也可以自定义属性（比如header只能带什么，只能是post方式等等）
+    */
+    corsConfiguration.addAllowedOrigin(&quot;*&quot;);
+    corsConfiguration.addAllowedHeader(&quot;*&quot;);
+    corsConfiguration.addAllowedMethod(&quot;*&quot;);
+    corsConfiguration.setAllowCredentials(true);
+    corsConfiguration.setMaxAge(3600L);
+    return corsConfiguration;
+}
+@Bean
+public CorsFilter corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration(&quot;/**&quot;, corsConfig());
+    return new CorsFilter(source);
+}
+</code></pre>
 
                 </div>
             </article>
@@ -112,20 +109,20 @@
         <div class="mdui-container">
             <div class="mdui-row">
                 
-                <a href="https://flakkaqi.github.io/post/java-shi-xian-wen-jian-he-base64-zi-fu-chuan-hu-zhuan/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
+                <a href="https://flakkaqi.github.io/post/huan-cun-de-san-da-wen-ti/" class="mdui-ripple mdui-color-theme mdui-col-xs-2 mdui-col-sm-6 doc-footer-nav-left">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_back</i>
                         <span class="doc-footer-nav-direction mdui-hidden-xs-down">上一篇文章</span>
-                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">Java 实现文件和base64字符串互转</div>
+                        <div class="doc-footer-nav-chapter mdui-hidden-xs-down">缓存的三大问题</div>
                     </div>
                 </a>
                 
                 
-                <a href="https://flakkaqi.github.io/post/you-qu-de-bo-ke-wang-zhan-~/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
+                <a href="https://flakkaqi.github.io/post/springboot-ru-he-pei-zhi-redistemplate/" class="mdui-ripple mdui-color-theme mdui-col-xs-10 mdui-col-sm-6 doc-footer-nav-right">
                     <div class="doc-footer-nav-text">
                         <i class="mdui-icon material-icons">arrow_forward</i>
                         <span class="doc-footer-nav-direction">下一篇文章</span>
-                        <div class="doc-footer-nav-chapter">有趣的博客网站~</div>
+                        <div class="doc-footer-nav-chapter">Springboot如何配置RedisTemplate</div>
                     </div>
                 </a>
                 
